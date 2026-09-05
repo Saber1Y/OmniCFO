@@ -6,19 +6,18 @@ const log = createLogger("route:policy");
 
 // --- In-memory policy store (hackathon-simple, survives request lifecycle) ---
 
-interface PolicyRule {
-  id: string;
-  name: string;
-  type: "threshold" | "whitelist" | "budget";
-  value: string;
-  enabled: boolean;
-  description: string;
+interface PolicyRules {
+  autoApproveThresholdCents: number;
+  requireTelegramApproval: boolean;
+  requireDualApproval: boolean;
+  maxRetryAttempts: number;
+  approvalTimeoutSeconds: number;
 }
 
 interface VendorEntry {
+  id: string;
   name: string;
-  status: "approved" | "pending";
-  spend_cents: number;
+  trusted: boolean;
 }
 
 interface AuditEntry {
@@ -29,70 +28,26 @@ interface AuditEntry {
   detail: string;
 }
 
-const defaultRules: PolicyRule[] = [
-  {
-    id: "r1",
-    name: "Auto-Approve Threshold",
-    type: "threshold",
-    value: `$${(config.policy.autoApproveThresholdCents / 100).toFixed(2)}`,
-    enabled: true,
-    description: "Invoices at or below this amount are auto-approved without human review.",
-  },
-  {
-    id: "r2",
-    name: "Telegram Alert Threshold",
-    type: "threshold",
-    value: `$${((config.policy.autoApproveThresholdCents + 1) / 100).toFixed(2)}`,
-    enabled: true,
-    description: "Invoices above this amount are routed to CFO via Telegram for approval.",
-  },
-  {
-    id: "r3",
-    name: "Hard Rejection Limit",
-    type: "threshold",
-    value: "$50,000.00",
-    enabled: true,
-    description: "Invoices exceeding this amount are automatically rejected. Requires manual override.",
-  },
-  {
-    id: "r4",
-    name: "Monthly Budget Cap",
-    type: "budget",
-    value: "$200,000.00",
-    enabled: true,
-    description: "Total monthly spend cap. New invoices are flagged when approaching limit.",
-  },
-  {
-    id: "r5",
-    name: "Duplicate Detection",
-    type: "threshold",
-    value: "Enabled",
-    enabled: true,
-    description: "Cross-references invoice hashes against Supabase to prevent duplicate payments.",
-  },
-  {
-    id: "r6",
-    name: "Vendor Whitelist Mode",
-    type: "whitelist",
-    value: "Strict",
-    enabled: false,
-    description: "Only pre-approved vendors can receive payments. Unknown vendors require manual review.",
-  },
+let policyRules: PolicyRules = {
+  autoApproveThresholdCents: config.policy.autoApproveThresholdCents,
+  requireTelegramApproval: true,
+  requireDualApproval: false,
+  maxRetryAttempts: 3,
+  approvalTimeoutSeconds: 300,
+};
+
+let vendors: VendorEntry[] = [
+  { id: "v1", name: "AWS Cloud Services", trusted: true },
+  { id: "v2", name: "Datadog Inc.", trusted: true },
+  { id: "v3", name: "GitHub Enterprise", trusted: true },
+  { id: "v4", name: "Vercel Platform", trusted: true },
+  { id: "v5", name: "Supabase Pro", trusted: true },
+  { id: "v6", name: "Stripe Processing", trusted: true },
 ];
 
-const defaultVendors: VendorEntry[] = [
-  { name: "AWS Cloud Services", status: "approved", spend_cents: 4500000 },
-  { name: "Datadog Inc.", status: "approved", spend_cents: 12000000 },
-  { name: "GitHub Enterprise", status: "approved", spend_cents: 2100000 },
-  { name: "Vercel Platform", status: "approved", spend_cents: 890000 },
-  { name: "Supabase Pro", status: "approved", spend_cents: 2500000 },
-  { name: "Stripe Processing", status: "approved", spend_cents: 34000000 },
-];
-
-// Mutable state
-let rules: PolicyRule[] = [...defaultRules];
-let vendors: VendorEntry[] = [...defaultVendors];
 let auditLog: AuditEntry[] = [];
+
+let vendorIdCounter = 7;
 
 /**
  * Record an audit entry (called from other services after policy evaluation).
@@ -102,21 +57,16 @@ export function recordAuditEntry(entry: Omit<AuditEntry, "timestamp">) {
     ...entry,
     timestamp: new Date().toISOString(),
   });
-  // Keep last 100 entries
   if (auditLog.length > 100) {
     auditLog = auditLog.slice(0, 100);
   }
 }
 
 /**
- * Get the current auto-approve threshold in cents (reads from live rules).
+ * Get the current auto-approve threshold in cents.
  */
 export function getAutoApproveThresholdCents(): number {
-  const rule = rules.find((r) => r.id === "r1" && r.enabled);
-  if (!rule) return config.policy.autoApproveThresholdCents;
-  const match = rule.value.match(/\$([\d,]+\.?\d*)/);
-  if (!match) return config.policy.autoApproveThresholdCents;
-  return Math.round(parseFloat(match[1].replace(/,/g, "")) * 100);
+  return policyRules.autoApproveThresholdCents;
 }
 
 // --- Router ---
@@ -126,12 +76,12 @@ export const policyRouter = Router();
 /**
  * GET /api/policy
  *
- * Returns all policy rules, vendor whitelist, and recent audit log.
+ * Returns policy rules, vendor whitelist, and recent audit log.
  */
 policyRouter.get("/", (_req: Request, res: Response) => {
   try {
     res.json({
-      rules,
+      rules: policyRules,
       vendors,
       auditLog: auditLog.slice(0, 20),
     });
@@ -148,33 +98,41 @@ policyRouter.get("/", (_req: Request, res: Response) => {
  * Returns just the policy rules.
  */
 policyRouter.get("/rules", (_req: Request, res: Response) => {
-  res.json({ rules });
+  res.json({ rules: policyRules });
 });
 
 /**
  * PUT /api/policy/rules
  *
- * Update policy rules. Accepts a partial array of rule updates (matched by id).
+ * Update policy rules. Accepts a flat object with rule fields.
  */
 policyRouter.put("/rules", (req: Request, res: Response) => {
   try {
-    const updates = req.body.rules as Partial<PolicyRule>[];
-    if (!Array.isArray(updates)) {
-      res.status(400).json({ error: "rules must be an array" });
+    const updates = req.body;
+
+    if (!updates || typeof updates !== "object") {
+      res.status(400).json({ error: "rules must be an object" });
       return;
     }
 
-    for (const update of updates) {
-      if (!update.id) continue;
-      const idx = rules.findIndex((r) => r.id === update.id);
-      if (idx === -1) continue;
-
-      rules[idx] = { ...rules[idx], ...update };
-
-      log.info("Policy rule updated", { rule_id: update.id, changes: update });
+    if (updates.autoApproveThresholdCents !== undefined) {
+      policyRules.autoApproveThresholdCents = Number(updates.autoApproveThresholdCents);
+    }
+    if (updates.requireTelegramApproval !== undefined) {
+      policyRules.requireTelegramApproval = Boolean(updates.requireTelegramApproval);
+    }
+    if (updates.requireDualApproval !== undefined) {
+      policyRules.requireDualApproval = Boolean(updates.requireDualApproval);
+    }
+    if (updates.maxRetryAttempts !== undefined) {
+      policyRules.maxRetryAttempts = Number(updates.maxRetryAttempts);
+    }
+    if (updates.approvalTimeoutSeconds !== undefined) {
+      policyRules.approvalTimeoutSeconds = Number(updates.approvalTimeoutSeconds);
     }
 
-    res.json({ rules });
+    log.info("Policy rules updated", { threshold: policyRules.autoApproveThresholdCents });
+    res.json({ rules: policyRules });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     log.error("Failed to update rules", { error: message });
@@ -188,9 +146,15 @@ policyRouter.put("/rules", (req: Request, res: Response) => {
  * Reset all rules to defaults.
  */
 policyRouter.post("/rules/reset", (_req: Request, res: Response) => {
-  rules = [...defaultRules];
+  policyRules = {
+    autoApproveThresholdCents: config.policy.autoApproveThresholdCents,
+    requireTelegramApproval: true,
+    requireDualApproval: false,
+    maxRetryAttempts: 3,
+    approvalTimeoutSeconds: 300,
+  };
   log.info("Policy rules reset to defaults");
-  res.json({ rules });
+  res.json({ rules: policyRules });
 });
 
 /**
@@ -220,9 +184,14 @@ policyRouter.post("/vendors", (req: Request, res: Response) => {
       return;
     }
 
-    vendors.push({ name, status: "pending", spend_cents: 0 });
+    const vendor: VendorEntry = {
+      id: `v${vendorIdCounter++}`,
+      name,
+      trusted: false,
+    };
+    vendors.push(vendor);
     log.info("Vendor added", { name });
-    res.status(201).json({ vendors });
+    res.status(201).json(vendor);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     log.error("Failed to add vendor", { error: message });
@@ -231,20 +200,20 @@ policyRouter.post("/vendors", (req: Request, res: Response) => {
 });
 
 /**
- * DELETE /api/policy/vendors/:name
+ * DELETE /api/policy/vendors/:id
  *
- * Remove a vendor from the whitelist.
+ * Remove a vendor from the whitelist by ID.
  */
-policyRouter.delete("/vendors/:name", (req: Request, res: Response) => {
-  const name = decodeURIComponent(String(req.params.name));
-  const idx = vendors.findIndex((v) => v.name === name);
+policyRouter.delete("/vendors/:id", (req: Request, res: Response) => {
+  const id = req.params.id;
+  const idx = vendors.findIndex((v) => v.id === id);
   if (idx === -1) {
     res.status(404).json({ error: "Vendor not found" });
     return;
   }
-  vendors.splice(idx, 1);
-  log.info("Vendor removed", { name });
-  res.json({ vendors });
+  const removed = vendors.splice(idx, 1)[0];
+  log.info("Vendor removed", { name: removed.name });
+  res.json({ ok: true });
 });
 
 /**
