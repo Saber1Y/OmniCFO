@@ -1,6 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="6" fill="#0f0d15"/>
-  <rect x="1" y="1" width="30" height="30" rx="5" stroke="#252036" stroke-width="1"/>
-  <path d="M16 6L8 10v8c0 4.4 3.4 8.5 8 9.5 4.6-1 8-5.1 8-9.5v-8l-8-4z" stroke="#a78bfa" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
-  <text x="16" y="20" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" font-weight="700" fill="#a78bfa">OC</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 32" fill="none">
+  <!-- Icon: Shield with upward graph - protection + growth -->
+  <g transform="translate(0, 0)">
+    <!-- Shield outline -->
+    <path d="M14 2C14 0.89543 14.8954 0 16 0C17.1046 0 18 0.89543 18 2V10C18 16.0751 22.5 26 30 28V28H32V28C39.5 26 44 16.0751 44 10V2C44 0.89543 44.8954 0 46 0C47.1046 0 48 0.89543 48 2V10C48 22.1803 38.5 32 26 34C13.5 32 4 22.1803 4 10V2C4 0.89543 4.89543 0 6 0C7.10457 0 8 0.89543 8 2V10C8 16.0751 12.5 26 20 28V28H22V28C29.5 26 34 16.0751 34 10V2C34 0.89543 34.8954 0 36 0C37.1046 0 38 0.89543 38 2V10C38 22.1803 28.5 32 16 34C3.5 32 -6 22.1803 -6 10V2C-6 0.89543 -5.10457 0 -4 0C-2.89543 0 -2 0.89543 -2 2V10C-2 16.0751 2.5 26 10 28V28H12V28C19.5 26 24 16.0751 24 10V2C24 0.89543 24.8954 0 26 0C27.1046 0 28 0.89543 28 2V10C28 22.1803 18.5 32 6 34C-6.5 32 -16 22.1803 -16 10V2C-16 0.89543 -15.1046 0 -14 0C-12.8954 0 -12 0.89543 -12 2V10C-12 16.0751 -7.5 26 0 28V28H2V28C9.5 26 14 16.0751 14 10V2Z" fill="#1C1917" stroke="#6366F1" stroke-width="1.5"/>
+    <!-- Upward graph line inside shield -->
+    <path d="M16 24L20 20L24 22L28 18L32 14" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Dot markers -->
+    <circle cx="16" cy="24" r="2.5" fill="#6366F1"/>
+    <circle cx="20" cy="20" r="2.5" fill="#6366F1"/>
+    <circle cx="24" cy="22" r="2.5" fill="#6366F1"/>
+    <circle cx="28" cy="18" r="2.5" fill="#6366F1"/>
+    <circle cx="32" cy="14" r="2.5" fill="#6366F1"/>
+  </g>
+  <!-- Text: OmniCFO -->
+  <text x="52" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#1C1917" letter-spacing="-0.5">OmniCFO</text>
 </svg>

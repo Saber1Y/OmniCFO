@@ -40,8 +40,17 @@ export default function DashboardLayout({
         {/* Logo */}
         <div className="flex h-12 items-center justify-between border-b border-border px-3">
           {!collapsed && (
-            <Link href="/" className="font-display text-sm font-medium text-foreground">
-              OmniCFO
+            <Link href="/" className="flex items-center gap-2 font-display text-sm font-medium text-foreground" aria-label="OmniCFO Home">
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <path d="M2 4C2 2.89543 2.89543 2 4 2H28C29.1046 2 30 2.89543 30 4V14C30 21.732 26.5 29 16 31C5.5 29 2 21.732 2 14V4Z" fill="#1C1917" stroke="#6366F1" stroke-width="1.5"/>
+                <path d="M10 18L13 15L16 16L19 13L22 10" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <circle cx="10" cy="18" r="1.8" fill="#6366F1"/>
+                <circle cx="13" cy="15" r="1.8" fill="#6366F1"/>
+                <circle cx="16" cy="16" r="1.8" fill="#6366F1"/>
+                <circle cx="19" cy="13" r="1.8" fill="#6366F1"/>
+                <circle cx="22" cy="10" r="1.8" fill="#6366F1"/>
+              </svg>
+              <span>OmniCFO</span>
             </Link>
           )}
           <button
