@@ -45,10 +45,8 @@ export function Footer() {
           </div>
 
           <p className="text-[13px] text-muted-foreground">
-            Built by{" "}
-            <span className="font-medium text-stone-800">Saber CM</span>
+            Built by <span className="font-medium text-stone-800">Saber </span>
             {" & "}
-            <span className="font-medium text-stone-800">Amal Reji</span>
           </p>
 
           <p className="text-[12px] text-muted-foreground">

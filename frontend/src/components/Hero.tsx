@@ -8,17 +8,6 @@ export function Hero() {
       <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
         {/* Left: text */}
         <div>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: "easeOut", delay: 0.1 }}
-            className="mb-6 inline-flex rounded-full border border-accent-border bg-accent-light px-4 py-1.5"
-          >
-            <span className="text-xs font-semibold tracking-wide uppercase text-accent">
-              Syndicate Hackathon 2026, track 2
-            </span>
-          </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -35,8 +24,8 @@ export function Hero() {
             className="mt-6 max-w-lg text-[18px]/[28px] text-muted-foreground"
           >
             The self-healing financial agent that audits invoices, enforces
-            fail-closed policy gates, and triggers compliant settlements
-            through Dodo Payments.
+            fail-closed policy gates, and triggers compliant settlements through
+            Dodo Payments.
           </motion.p>
 
           <motion.div
@@ -139,7 +128,9 @@ export function Hero() {
               transition={{ duration: 0.3, delay: 1.9 }}
               className="mt-2"
             >
-              <span className="text-stone-500">policy check --threshold $500</span>
+              <span className="text-stone-500">
+                policy check --threshold $500
+              </span>
             </motion.div>
 
             {/* Line 6 - result */}
@@ -150,7 +141,9 @@ export function Hero() {
               className="mt-2"
             >
               <span className="text-emerald-400 font-semibold">APPROVED</span>{" "}
-              <span className="text-stone-500">under threshold, settling...</span>
+              <span className="text-stone-500">
+                under threshold, settling...
+              </span>
             </motion.div>
 
             {/* Line 7 */}
@@ -201,7 +194,9 @@ export function Hero() {
               className="mt-2"
             >
               <span className="text-warning font-semibold">HELD</span>{" "}
-              <span className="text-stone-500">exceeds $500, routing to CFO...</span>
+              <span className="text-stone-500">
+                exceeds $500, routing to CFO...
+              </span>
             </motion.div>
 
             {/* Cursor */}
@@ -215,7 +210,11 @@ export function Hero() {
               <motion.span
                 className="inline-block h-4 w-2 bg-stone-300"
                 animate={{ opacity: [1, 0] }}
-                transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+                transition={{
+                  duration: 0.8,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
               />
             </motion.div>
           </div>
