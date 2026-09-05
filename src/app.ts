@@ -1,6 +1,7 @@
 import express from "express";
 import { invoiceRouter } from "./routes/invoice.js";
 import { webhookRouter } from "./routes/webhook.js";
+import { policyRouter } from "./routes/policy.js";
 import { createLogger } from "./logger.js";
 
 const log = createLogger("app");
@@ -28,6 +29,7 @@ export function createApp(): express.Express {
 
   // Routes
   app.use("/api/invoices", invoiceRouter);
+  app.use("/api/policy", policyRouter);
   app.use("/webhook", webhookRouter);
 
   // 404 handler

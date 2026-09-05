@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   ShieldCheck,
   Plus,
@@ -9,9 +9,13 @@ import {
   AlertTriangle,
   Save,
   RotateCcw,
+  RefreshCw,
+  Trash2,
 } from "lucide-react";
 
-// --- Data ---
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+// --- Types ---
 
 interface PolicyRule {
   id: string;
@@ -22,43 +26,137 @@ interface PolicyRule {
   description: string;
 }
 
-const defaultRules: PolicyRule[] = [
-  { id: "r1", name: "Auto-Approve Threshold", type: "threshold", value: "$500.00", enabled: true, description: "Invoices at or below this amount are auto-approved without human review." },
-  { id: "r2", name: "Telegram Alert Threshold", type: "threshold", value: "$500.01", enabled: true, description: "Invoices above this amount are routed to CFO via Telegram for approval." },
-  { id: "r3", name: "Hard Rejection Limit", type: "threshold", value: "$50,000.00", enabled: true, description: "Invoices exceeding this amount are automatically rejected. Requires manual override." },
-  { id: "r4", name: "Monthly Budget Cap", type: "budget", value: "$200,000.00", enabled: true, description: "Total monthly spend cap. New invoices are flagged when approaching limit." },
-  { id: "r5", name: "Duplicate Detection", type: "threshold", value: "Enabled", enabled: true, description: "Cross-references invoice hashes against Supabase to prevent duplicate payments." },
-  { id: "r6", name: "Vendor Whitelist Mode", type: "whitelist", value: "Strict", enabled: false, description: "Only pre-approved vendors can receive payments. Unknown vendors require manual review." },
-];
+interface VendorEntry {
+  name: string;
+  status: "approved" | "pending";
+  spend_cents: number;
+}
 
-const vendorList = [
-  { name: "AWS Cloud Services", status: "approved", spend: "$45,000.00" },
-  { name: "Datadog Inc.", status: "approved", spend: "$120,000.00" },
-  { name: "GitHub Enterprise", status: "approved", spend: "$21,000.00" },
-  { name: "Vercel Platform", status: "approved", spend: "$8,900.00" },
-  { name: "Supabase Pro", status: "approved", spend: "$25,000.00" },
-  { name: "Stripe Processing", status: "approved", spend: "$340,000.00" },
-  { name: "Unknown Vendor LLC", status: "pending", spend: "$0.00" },
-];
+interface AuditEntry {
+  timestamp: string;
+  rule: string;
+  action: "triggered" | "passed" | "warning" | "skipped" | "rejected";
+  invoice_id: string;
+  detail: string;
+}
 
-const auditLog = [
-  { time: "09:12:03", rule: "Telegram Alert Threshold", action: "triggered", invoice: "INV-2848", detail: "$1,200 > $500" },
-  { time: "09:12:01", rule: "Auto-Approve Threshold", action: "passed", invoice: "INV-2847", detail: "$450 < $500" },
-  { time: "09:11:55", rule: "Duplicate Detection", action: "passed", invoice: "INV-2847", detail: "No hash match" },
-  { time: "09:10:22", rule: "Monthly Budget Cap", action: "warning", invoice: "INV-2846", detail: "87% of $200k cap" },
-  { time: "09:08:10", rule: "Hard Rejection Limit", action: "passed", invoice: "INV-2845", detail: "$89 < $50k" },
-  { time: "08:55:00", rule: "Vendor Whitelist Mode", action: "skipped", invoice: "INV-2844", detail: "Rule disabled" },
-];
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+}
 
 // --- Page ---
 
 export default function PolicyPage() {
-  const [rules, setRules] = useState(defaultRules);
+  const [rules, setRules] = useState<PolicyRule[]>([]);
+  const [vendors, setVendors] = useState<VendorEntry[]>([]);
+  const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
   const [showAddVendor, setShowAddVendor] = useState(false);
+  const [newVendorName, setNewVendorName] = useState("");
 
-  const toggleRule = (id: string) => {
-    setRules(rules.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)));
+  const fetchPolicy = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/policy`);
+      if (res.ok) {
+        const data = await res.json();
+        setRules(data.rules || []);
+        setVendors(data.vendors || []);
+        setAuditLog(data.auditLog || []);
+      }
+    } catch {
+      // backend might not be running
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchPolicy(); }, [fetchPolicy]);
+
+  const toggleRule = async (id: string) => {
+    const rule = rules.find((r) => r.id === id);
+    if (!rule) return;
+
+    const updated = rules.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r));
+    setRules(updated);
+
+    try {
+      await fetch(`${API}/api/policy/rules`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rules: [{ id, enabled: !rule.enabled }] }),
+      });
+    } catch {
+      // revert on failure
+      setRules(rules);
+    }
+  };
+
+  const saveRuleValue = async (id: string, value: string) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/api/policy/rules`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rules: [{ id, value }] }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRules(data.rules);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false);
+      setEditing(null);
+    }
+  };
+
+  const resetRules = async () => {
+    try {
+      const res = await fetch(`${API}/api/policy/rules/reset`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setRules(data.rules);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const addVendor = async () => {
+    if (!newVendorName.trim()) return;
+    try {
+      const res = await fetch(`${API}/api/policy/vendors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newVendorName.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVendors(data.vendors);
+        setNewVendorName("");
+        setShowAddVendor(false);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const removeVendor = async (name: string) => {
+    try {
+      const res = await fetch(`${API}/api/policy/vendors/${encodeURIComponent(name)}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVendors(data.vendors);
+      }
+    } catch {
+      // ignore
+    }
   };
 
   const actionColor: Record<string, string> = {
@@ -66,6 +164,7 @@ export default function PolicyPage() {
     passed: "text-emerald-600",
     warning: "text-amber-600",
     skipped: "text-muted-foreground",
+    rejected: "text-red-500",
   };
 
   return (
@@ -79,11 +178,25 @@ export default function PolicyPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
+          <button onClick={fetchPolicy}
+            className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
+            <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+          <button onClick={resetRules}
+            className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
             <RotateCcw className="h-3 w-3" />
             Reset Defaults
           </button>
-          <button className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-accent/90">
+          <button onClick={() => {
+            const updates = rules.map((r) => ({ id: r.id, value: r.value, enabled: r.enabled }));
+            fetch(`${API}/api/policy/rules`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ rules: updates }),
+            });
+          }}
+            className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-accent/90">
             <Save className="h-3 w-3" />
             Save Changes
           </button>
@@ -99,52 +212,67 @@ export default function PolicyPage() {
             {rules.filter((r) => r.enabled).length}/{rules.length} enabled
           </span>
         </div>
-        <div className="divide-y divide-border">
-          {rules.map((rule) => (
-            <div key={rule.id} className="px-5 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => toggleRule(rule.id)}
-                    className={`flex h-5 w-5 items-center justify-center rounded-md border ${
-                      rule.enabled
-                        ? "border-accent/40 bg-accent/10"
-                        : "border-border bg-muted"
-                    }`}
-                  >
-                    {rule.enabled && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
-                  </button>
-                  <div>
-                    <div className="text-xs font-medium text-foreground">{rule.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{rule.description}</div>
+        {loading ? (
+          <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" /></div>
+        ) : (
+          <div className="divide-y divide-border">
+            {rules.map((rule) => (
+              <div key={rule.id} className="px-5 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => toggleRule(rule.id)}
+                      className={`flex h-5 w-5 items-center justify-center rounded-md border transition-colors ${
+                        rule.enabled
+                          ? "border-accent/40 bg-accent/10"
+                          : "border-border bg-muted"
+                      }`}
+                    >
+                      {rule.enabled && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
+                    </button>
+                    <div>
+                      <div className="text-xs font-medium text-foreground">{rule.name}</div>
+                      <div className="text-[10px] text-muted-foreground">{rule.description}</div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-foreground">{rule.value}</span>
-                  <button
-                    onClick={() => setEditing(editing === rule.id ? null : rule.id)}
-                    className="rounded-lg px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex items-center gap-3">
+                    {editing === rule.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          className="w-32 rounded-md border border-border bg-muted px-2 py-1 font-mono text-xs text-foreground outline-none focus:border-accent/50"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => saveRuleValue(rule.id, editValue)}
+                          disabled={saving}
+                          className="rounded-md bg-accent px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-accent/90 disabled:opacity-50"
+                        >
+                          {saving ? "..." : "Apply"}
+                        </button>
+                        <button onClick={() => setEditing(null)} className="rounded-md px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground">
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="font-mono text-xs text-foreground">{rule.value}</span>
+                        <button
+                          onClick={() => { setEditing(rule.id); setEditValue(rule.value); }}
+                          className="rounded-lg px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground"
+                        >
+                          Edit
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-              {editing === rule.id && (
-                <div className="mt-3 ml-8 rounded-lg border border-border bg-muted p-3">
-                  <input
-                    type="text"
-                    defaultValue={rule.value}
-                    className="w-full rounded-md border border-border bg-card px-2 py-1.5 font-mono text-xs text-foreground outline-none focus:border-accent/50"
-                  />
-                  <div className="mt-2 flex gap-2">
-                    <button className="rounded-md bg-accent px-3 py-1 text-[10px] font-semibold text-white">Apply</button>
-                    <button onClick={() => setEditing(null)} className="rounded-md px-3 py-1 text-[10px] text-muted-foreground">Cancel</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -160,23 +288,36 @@ export default function PolicyPage() {
               Add
             </button>
           </div>
-          <div className="divide-y divide-border">
-            {vendorList.map((v) => (
-              <div key={v.name} className="flex items-center justify-between px-5 py-2">
-                <div className="text-xs text-foreground">{v.name}</div>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] text-muted-foreground">{v.spend}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-mono ${
-                    v.status === "approved"
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-amber-50 text-amber-600"
-                  }`}>
-                    {v.status}
-                  </span>
+          {loading ? (
+            <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" /></div>
+          ) : (
+            <div className="divide-y divide-border">
+              {vendors.map((v) => (
+                <div key={v.name} className="flex items-center justify-between px-5 py-2">
+                  <div className="text-xs text-foreground">{v.name}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[10px] text-muted-foreground">{formatCents(v.spend_cents)}</span>
+                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-mono ${
+                      v.status === "approved"
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-amber-50 text-amber-600"
+                    }`}>
+                      {v.status}
+                    </span>
+                    <button
+                      onClick={() => removeVendor(v.name)}
+                      className="rounded-md p-1 text-muted-foreground hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+              {vendors.length === 0 && (
+                <div className="px-5 py-6 text-center text-[10px] text-muted-foreground">No vendors</div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Audit Log */}
@@ -184,28 +325,44 @@ export default function PolicyPage() {
           <div className="flex items-center gap-2 border-b border-border px-5 py-3">
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             <span className="text-xs font-semibold text-foreground">Policy Audit Log</span>
+            <span className="ml-auto font-mono text-[10px] text-muted-foreground">{auditLog.length} entries</span>
           </div>
-          <div className="divide-y divide-border">
-            {auditLog.map((log, i) => (
-              <div key={i} className="px-5 py-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] text-muted-foreground">{log.time}</span>
-                    <span className="text-[10px] text-foreground">{log.rule}</span>
+          {loading ? (
+            <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" /></div>
+          ) : auditLog.length === 0 ? (
+            <div className="flex h-40 flex-col items-center justify-center gap-2">
+              <AlertTriangle className="h-6 w-6 text-muted-foreground/30" />
+              <span className="text-xs text-muted-foreground">No audit entries yet</span>
+              <span className="text-[10px] text-muted-foreground">Submit an invoice to see policy decisions here</span>
+            </div>
+          ) : (
+            <div className="divide-y divide-border max-h-[400px] overflow-y-auto">
+              {auditLog.map((log, i) => {
+                const time = new Date(log.timestamp);
+                const timeStr = time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                return (
+                  <div key={i} className="px-5 py-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[9px] text-muted-foreground">{timeStr}</span>
+                        <span className="text-[10px] text-foreground">{log.rule}</span>
+                      </div>
+                      <span className={`font-mono text-[9px] uppercase tracking-wider ${actionColor[log.action]}`}>
+                        {log.action}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-[10px] text-muted-foreground">
+                      {log.invoice_id} - {log.detail}
+                    </div>
                   </div>
-                  <span className={`font-mono text-[9px] uppercase tracking-wider ${actionColor[log.action]}`}>
-                    {log.action}
-                  </span>
-                </div>
-                <div className="mt-0.5 text-[10px] text-muted-foreground">
-                  {log.invoice} - {log.detail}
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Add Vendor Modal */}
       {showAddVendor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-lg">
@@ -218,14 +375,18 @@ export default function PolicyPage() {
             <div className="space-y-3">
               <input
                 type="text"
+                value={newVendorName}
+                onChange={(e) => setNewVendorName(e.target.value)}
                 placeholder="Vendor name"
                 className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50"
+                autoFocus
+                onKeyDown={(e) => e.key === "Enter" && addVendor()}
               />
               <div className="flex gap-2">
                 <button onClick={() => setShowAddVendor(false)} className="flex-1 rounded-lg border border-border bg-muted py-2 text-xs text-muted-foreground">
                   Cancel
                 </button>
-                <button className="flex-1 rounded-lg bg-accent py-2 text-xs font-semibold text-white hover:bg-accent/90">
+                <button onClick={addVendor} className="flex-1 rounded-lg bg-accent py-2 text-xs font-semibold text-white hover:bg-accent/90">
                   Add Vendor
                 </button>
               </div>

@@ -1,6 +1,6 @@
-import { config } from "../config.js";
 import { createLogger } from "../logger.js";
 import type { Invoice, PolicyDecision } from "../types.js";
+import { getAutoApproveThresholdCents, recordAuditEntry } from "../routes/policy.js";
 
 const log = createLogger("policy");
 
@@ -10,9 +10,11 @@ const log = createLogger("policy");
  * Policy rules:
  * - Amount <= threshold: AUTO_APPROVED
  * - Amount > threshold: PENDING_APPROVAL (requires CFO sign-off)
+ *
+ * Uses live threshold from the policy API (in-memory store).
  */
 export function evaluateInvoice(invoice: Invoice): PolicyDecision {
-  const threshold = config.policy.autoApproveThresholdCents;
+  const threshold = getAutoApproveThresholdCents();
 
   if (invoice.amount_cents <= threshold) {
     log.info("Invoice auto-approved (under threshold)", {
@@ -20,6 +22,14 @@ export function evaluateInvoice(invoice: Invoice): PolicyDecision {
       amount_cents: invoice.amount_cents,
       threshold_cents: threshold,
     });
+
+    recordAuditEntry({
+      rule: "Auto-Approve Threshold",
+      action: "passed",
+      invoice_id: invoice.invoice_id,
+      detail: `$${(invoice.amount_cents / 100).toFixed(2)} < $${(threshold / 100).toFixed(2)}`,
+    });
+
     return {
       approved: true,
       reason: `Amount $${(invoice.amount_cents / 100).toFixed(2)} is within the $${(threshold / 100).toFixed(2)} auto-approval threshold`,
@@ -32,6 +42,14 @@ export function evaluateInvoice(invoice: Invoice): PolicyDecision {
     amount_cents: invoice.amount_cents,
     threshold_cents: threshold,
   });
+
+  recordAuditEntry({
+    rule: "Telegram Alert Threshold",
+    action: "triggered",
+    invoice_id: invoice.invoice_id,
+    detail: `$${(invoice.amount_cents / 100).toFixed(2)} > $${(threshold / 100).toFixed(2)}`,
+  });
+
   return {
     approved: false,
     reason: `Amount $${(invoice.amount_cents / 100).toFixed(2)} exceeds the $${(threshold / 100).toFixed(2)} threshold and requires CFO approval`,
@@ -43,6 +61,7 @@ export function evaluateInvoice(invoice: Invoice): PolicyDecision {
  * Format a human-readable approval summary for Telegram notifications.
  */
 export function formatApprovalMessage(invoice: Invoice): string {
+  const threshold = getAutoApproveThresholdCents();
   return [
     `🔔 *New Invoice Requiring Approval*`,
     ``,
@@ -51,7 +70,7 @@ export function formatApprovalMessage(invoice: Invoice): string {
     `*Amount:* $${(invoice.amount_cents / 100).toFixed(2)}`,
     `*Status:* Pending Your Approval`,
     ``,
-    `_This invoice exceeds the $${(config.policy.autoApproveThresholdCents / 100).toFixed(2)} auto-approval threshold._`,
+    `_This invoice exceeds the $${(threshold / 100).toFixed(2)} auto-approval threshold._`,
   ].join("\n");
 }
 
