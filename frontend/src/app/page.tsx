@@ -1,21 +1,27 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
-import { ArchitectureDAG } from "@/components/ArchitectureDAG";
-import { LiveWorkflow } from "@/components/LiveWorkflow";
+import { ThreeCardGrid } from "@/components/ThreeCardGrid";
+import { ProductShowcase } from "@/components/ProductShowcase";
+import { WorkflowDiagram } from "@/components/WorkflowDiagram";
+import { SecurityDiagram } from "@/components/SecurityDiagram";
 import { TechStack } from "@/components/TechStack";
+import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
-    <>
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <main>
         <Hero />
-        <ArchitectureDAG />
-        <LiveWorkflow />
+        <ThreeCardGrid />
+        <SecurityDiagram />
+        <ProductShowcase />
+        <WorkflowDiagram />
         <TechStack />
+        <CTA />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

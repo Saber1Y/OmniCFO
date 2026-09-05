@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Shield, Menu, X } from "lucide-react";
+import { motion } from "motion/react";
+import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Architecture", href: "#architecture" },
@@ -14,78 +15,71 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
-      <nav className="flex items-center gap-1 rounded-full border border-rule bg-paper/80 px-2 py-1.5 backdrop-blur-md">
-        {/* Logo */}
-        <a href="/" className="flex items-center gap-2 px-3 py-1">
-          <Shield className="h-4 w-4 text-ink" strokeWidth={1.5} />
-          <span className="font-serif text-sm font-bold tracking-tight text-ink">
-            OmniCFO
-          </span>
+    <motion.nav
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md"
+    >
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+        <a href="/" className="font-display text-lg font-medium text-foreground">
+          OmniCFO
         </a>
 
-        {/* Divider */}
-        <div className="mx-1 h-4 w-px bg-rule" />
-
-        {/* Links */}
-        <div className="hidden items-center gap-0.5 md:flex">
+        <div className="hidden items-center gap-6 md:flex">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="rounded-full px-3 py-1.5 text-[13px] text-ink-muted transition-colors hover:text-ink"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
             </a>
           ))}
+          <a
+            href="https://github.com/Saber1Y/OmniCFO"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            GitHub
+          </a>
         </div>
 
-        {/* Divider */}
-        <div className="hidden h-4 w-px bg-rule md:block" />
-
-        {/* GitHub */}
-        <a
-          href="https://github.com/Saber1Y/OmniCFO"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden rounded-full px-3 py-1.5 text-[13px] text-ink-muted transition-colors hover:text-ink md:block"
-        >
-          GitHub
-        </a>
-
-        {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="ml-1 rounded-full p-1.5 text-ink-muted md:hidden"
+          className="text-muted-foreground md:hidden"
         >
-          {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-      </nav>
+      </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
-        <div className="absolute top-full left-4 right-4 mt-2 rounded-2xl border border-rule bg-paper/95 p-3 backdrop-blur-md md:hidden">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="border-t border-border bg-background/95 px-6 py-4 backdrop-blur-md md:hidden"
+        >
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm text-ink-muted hover:text-ink"
+              className="block py-2 text-sm text-muted-foreground hover:text-foreground"
             >
               {link.label}
             </a>
           ))}
-          <div className="my-1 h-px bg-rule" />
           <a
             href="https://github.com/Saber1Y/OmniCFO"
             target="_blank"
             rel="noopener noreferrer"
-            className="block rounded-lg px-3 py-2 text-sm text-ink-muted hover:text-ink"
+            className="block py-2 text-sm text-muted-foreground hover:text-foreground"
           >
             GitHub
           </a>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.nav>
   );
 }
