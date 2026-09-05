@@ -12,6 +12,18 @@ export function createApp(): express.Express {
   // Parse JSON bodies
   app.use(express.json());
 
+  // CORS for dashboard
+  app.use((_req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    if (_req.method === "OPTIONS") {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  });
+
   // Request logging middleware
   app.use((req, _res, next) => {
     log.debug(`${req.method} ${req.path}`, {
