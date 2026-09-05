@@ -31,23 +31,23 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg">
+    <div className="flex h-screen overflow-hidden bg-paper">
       {/* Sidebar */}
       <aside
-        className={`flex shrink-0 flex-col border-r border-border bg-bg-raised transition-all duration-200 ${
+        className={`flex shrink-0 flex-col border-r border-rule bg-paper-raised transition-all duration-200 ${
           collapsed ? "w-14" : "w-56"
         }`}
       >
         {/* Logo */}
-        <div className="flex h-12 items-center justify-between border-b border-border px-3">
+        <div className="flex h-12 items-center justify-between border-b border-rule px-3">
           {!collapsed && (
-            <Link href="/" className="text-sm font-semibold text-text">
-              Omni<span className="text-purple">CFO</span>
+            <Link href="/" className="text-sm font-semibold text-ink">
+              Omni<span className="text-ink">CFO</span>
             </Link>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="rounded p-1 text-text-muted hover:text-text"
+            className="rounded p-1 text-ink-muted hover:text-ink"
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -68,8 +68,8 @@ export default function DashboardLayout({
                 href={item.href}
                 className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-xs transition-colors ${
                   active
-                    ? "bg-purple-dim text-text"
-                    : "text-text-muted hover:bg-bg-surface hover:text-text"
+                    ? "bg-amber-soft text-ink"
+                    : "text-ink-muted hover:bg-paper-raised hover:text-ink"
                 }`}
                 title={collapsed ? item.label : undefined}
               >
@@ -81,11 +81,11 @@ export default function DashboardLayout({
         </nav>
 
         {/* Status */}
-        <div className="border-t border-border p-3">
+        <div className="border-t border-rule p-3">
           <div className="flex items-center gap-2">
             <Circle className="h-2 w-2 fill-green text-green" />
             {!collapsed && (
-              <span className="text-[10px] text-text-muted">
+              <span className="text-[10px] text-ink-muted">
                 AO Daemon: Connected
               </span>
             )}
@@ -96,21 +96,21 @@ export default function DashboardLayout({
       {/* Main */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-bg-raised px-4">
+        <header className="flex h-12 shrink-0 items-center justify-between border-b border-rule bg-paper-raised px-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-md border border-border bg-bg-surface px-2.5 py-1 text-[10px] font-medium text-text">
+            <div className="rounded-md border border-rule bg-paper-raised px-2.5 py-1 text-[10px] font-medium text-ink">
               OmniCFO-Mainnet
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <Circle className="h-1.5 w-1.5 fill-green text-green" />
-              <span className="font-mono text-[10px] text-text-muted">
+              <span className="font-mono text-[10px] text-ink-muted">
                 AO Daemon: Connected
               </span>
             </div>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-purple-dim text-[10px] font-semibold text-purple">
+            <div className="h-4 w-px bg-rule" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-rule bg-amber-soft text-[10px] font-semibold text-ink">
               SC
             </div>
           </div>

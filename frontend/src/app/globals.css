@@ -1,53 +1,59 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0f0d15;
-  --color-bg-raised: #161225;
-  --color-bg-surface: #1c1731;
-  --color-purple: #a78bfa;
-  --color-purple-dim: #1a1630;
-  --color-green: #34d399;
-  --color-green-dim: #0d2818;
-  --color-amber: #fbbf24;
-  --color-amber-dim: #2a1f0a;
-  --color-text: #e2e0ea;
-  --color-text-muted: #7c7891;
-  --color-border: #252036;
-  --font-sans: "Sora", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --color-paper: #faf8f5;
+  --color-paper-raised: #f3f0eb;
+  --color-ink: #1a1714;
+  --color-ink-muted: #6b6560;
+  --color-rule: #d8d3cc;
+  --color-green: #4a7c59;
+  --color-green-soft: #e8f0eb;
+  --color-amber: #a67c3d;
+  --color-amber-soft: #f5efe4;
+  --color-red: #8b3a3a;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-mono: "IBM Plex Mono", monospace;
 }
 
 @font-face {
-  font-family: "Sora";
-  src: url("https://fonts.gstatic.com/s/sora/v12/xMQOuFFYT72X5wkB_18qmnndmSdSnk-NKQI.woff2") format("woff2");
+  font-family: "Inter";
+  src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuBWYAZ9hiA.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Sora";
-  src: url("https://fonts.gstatic.com/s/sora/v12/xMQOuFFYT72X5wkB_18qmnndmSdSnk-NKQI.woff2") format("woff2");
+  font-family: "Inter";
+  src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuBWYAZ9hiA.woff2") format("woff2");
   font-weight: 500;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Sora";
-  src: url("https://fonts.gstatic.com/s/sora/v12/xMQOuFFYT72X5wkB_18qmnndmSdSfE.woff2") format("woff2");
+  font-family: "Inter";
+  src: url("https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFoYAZ9hiA.woff2") format("woff2");
   font-weight: 600;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Sora";
-  src: url("https://fonts.gstatic.com/s/sora/v12/xMQOuFFYT72X5wkB_18qmnndmSdSfE.woff2") format("woff2");
+  font-family: "Playfair Display";
+  src: url("https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2") format("woff2");
   font-weight: 700;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "JetBrains Mono";
-  src: url("https://cdn.jsdelivr.net/npm/jetbrains-mono@1.36.0/fonts/webfonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-family: "IBM Plex Mono";
+  src: url("https://fonts.gstatic.com/s/ibmplexmono/v19/-F6qfjptAgt5VM-kVkqdyU8n5igy1MCzb9M.woff2") format("woff2");
   font-weight: 400;
   font-display: swap;
 }
@@ -57,12 +63,16 @@ html {
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--color-paper);
+  color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: var(--color-amber-soft);
+}
+
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--color-paper); }
+::-webkit-scrollbar-thumb { background: var(--color-rule); border-radius: 3px; }

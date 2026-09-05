@@ -2,144 +2,111 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  FileText,
-  Brain,
-  ShieldCheck,
-  MessageSquare,
-  CreditCard,
-  Activity,
-  ArrowRight,
-} from "lucide-react";
 
-const nodes = [
+const stages = [
   {
-    id: "ingestion",
+    num: "1",
     label: "Ingestion",
-    sub: "Deterministic Parsing",
-    icon: FileText,
-    desc: "Deterministic parsing of multi-format unstructured payloads. PDFs, emails, and API payloads are normalized into a canonical schema before storage.",
+    desc: "Deterministic parsing of multi-format payloads. PDFs, emails, and API payloads normalized into a canonical schema before storage.",
   },
   {
-    id: "audit",
+    num: "2",
     label: "Multi-LLM Audit",
-    sub: "Cross-Referenced Verification",
-    icon: Brain,
     desc: "Cross-referenced verification to catch rate anomalies, duplicate hashes, and vendor legitimacy issues through a cascade of LLM verifiers.",
   },
   {
-    id: "policy",
+    num: "3",
     label: "Policy Gate",
-    sub: "Fail-Closed Design",
-    icon: ShieldCheck,
-    desc: "If the policy engine errors out, funds never move. Hard spend thresholds, vendor whitelisting, and budget caps enforced at every decision point.",
+    desc: "Fail-closed design. If the policy engine errors out, funds never move. Hard spend thresholds, vendor whitelisting, and budget caps.",
   },
   {
-    id: "approval",
+    num: "4",
     label: "Human Approval",
-    sub: "Stateful Pause",
-    icon: MessageSquare,
-    desc: "Stateful pause preserving cryptographic context. Invoices exceeding thresholds are routed to the CFO via Telegram with inline Approve/Reject buttons.",
+    desc: "Stateful pause preserving cryptographic context. Invoices exceeding thresholds are routed to the CFO via Telegram.",
   },
   {
-    id: "settlement",
+    num: "5",
     label: "Dodo Settlement",
-    sub: "Merchant of Record",
-    icon: CreditCard,
-    desc: "Dodo Payments acts as the Merchant of Record, handling compliance, tax, and card-network disputes. Checkout sessions for compliant fiat settlements.",
+    desc: "Merchant of Record handling compliance, tax, and card-network disputes. Checkout sessions for compliant fiat settlements.",
   },
   {
-    id: "observability",
+    num: "6",
     label: "Observability",
-    sub: "Full Audit Trail",
-    icon: Activity,
-    desc: "Every decision point is logged with structured traces. Complete observability for audit compliance, powered by Neatlogs structured logging.",
+    desc: "Every decision point logged with structured traces. Complete observability for audit compliance.",
   },
 ];
 
 export function ArchitectureDAG() {
-  const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [active, setActive] = useState<string | null>(null);
 
   return (
     <section id="architecture" className="py-24">
-      <div className="mx-auto max-w-6xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5 }}
-          className="mb-14"
-        >
-          <h2 className="text-3xl font-bold tracking-tight text-text md:text-4xl">
+      <div className="mx-auto max-w-4xl px-6">
+        <div className="mb-14">
+          <h2 className="font-serif text-3xl font-bold tracking-tight text-ink md:text-4xl">
             Architecture
           </h2>
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-text-muted">
+          <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-muted">
             A fail-closed pipeline where every invoice passes through
             verification, policy enforcement, and human approval before
             settlement. Zero-loss state persistence via Agent Orchestrator.
           </p>
-        </motion.div>
+        </div>
 
+        {/* Ledger flow */}
         <div className="relative">
-          <div className="pointer-events-none absolute left-0 right-0 top-1/2 hidden h-px bg-border md:block" />
+          {/* Vertical connecting rule */}
+          <div className="absolute left-[19px] top-2 bottom-2 w-px bg-rule" />
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
-            {nodes.map((node, i) => {
-              const Icon = node.icon;
-              const isActive = activeNode === node.id;
+          <div className="space-y-0">
+            {stages.map((stage, i) => {
+              const isActive = active === stage.num;
 
               return (
                 <motion.div
-                  key={node.id}
-                  initial={{ opacity: 0, y: 16 }}
+                  key={stage.num}
+                  initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.4, delay: i * 0.06 }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
                   className="relative"
                 >
+                  {/* Connecting dot */}
+                  <div className="absolute left-[15px] top-4 h-[9px] w-[9px] rounded-full border-2 border-ink bg-paper" />
+
+                  {/* Content */}
                   <button
-                    onClick={() => setActiveNode(isActive ? null : node.id)}
-                    className={`w-full rounded-lg border p-4 text-left transition-all ${
-                      isActive
-                        ? "border-purple/30 bg-purple-dim"
-                        : "border-border bg-bg-raised hover:border-purple/20"
-                    }`}
+                    onClick={() => setActive(isActive ? null : stage.num)}
+                    className="ml-12 w-full border-b border-rule py-5 text-left transition-colors hover:bg-paper-raised"
                   >
-                    <div className="mb-2 font-mono text-[9px] uppercase tracking-widest text-text-muted">
-                      Step {i + 1}
-                    </div>
-                    <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-md border border-border bg-bg-surface">
-                      <Icon className="h-4 w-4 text-text-muted" />
-                    </div>
-                    <div className="text-xs font-semibold text-text">
-                      {node.label}
-                    </div>
-                    <div className="mt-0.5 font-mono text-[10px] text-text-muted">
-                      {node.sub}
+                    <div className="flex items-baseline gap-4">
+                      <span className="font-serif text-2xl font-bold text-ink">
+                        {stage.num}
+                      </span>
+                      <span className="font-serif text-lg font-bold text-ink">
+                        {stage.label}
+                      </span>
+                      <span className="ml-auto font-mono text-[11px] text-ink-muted">
+                        {isActive ? "close" : "expand"}
+                      </span>
                     </div>
 
-                    {i < nodes.length - 1 && (
-                      <div className="pointer-events-none absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 text-text-muted/30 lg:block">
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-ink-muted">
+                            {stage.desc}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </button>
-
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 6 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute left-0 right-0 top-full z-20 mt-1.5 rounded-lg border border-border bg-bg-raised p-3"
-                      >
-                        <p className="text-[11px] leading-relaxed text-text-muted">
-                          {node.desc}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </motion.div>
               );
             })}

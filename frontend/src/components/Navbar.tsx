@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
-import { Shield, Menu, X, ExternalLink } from "lucide-react";
+import { Shield, Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Architecture", href: "#architecture" },
@@ -15,67 +14,78 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <motion.nav
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-bg/80 backdrop-blur-xl"
-    >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <a href="/" className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-text-muted" />
-          <span className="text-sm font-semibold text-text">
-            Omni<span className="text-purple">CFO</span>
+    <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+      <nav className="flex items-center gap-1 rounded-full border border-rule bg-paper/80 px-2 py-1.5 backdrop-blur-md">
+        {/* Logo */}
+        <a href="/" className="flex items-center gap-2 px-3 py-1">
+          <Shield className="h-4 w-4 text-ink" strokeWidth={1.5} />
+          <span className="font-serif text-sm font-bold tracking-tight text-ink">
+            OmniCFO
           </span>
         </a>
 
-        <div className="hidden items-center gap-6 md:flex">
+        {/* Divider */}
+        <div className="mx-1 h-4 w-px bg-rule" />
+
+        {/* Links */}
+        <div className="hidden items-center gap-0.5 md:flex">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-xs text-text-muted transition-colors hover:text-text"
+              className="rounded-full px-3 py-1.5 text-[13px] text-ink-muted transition-colors hover:text-ink"
             >
               {link.label}
             </a>
           ))}
-          <a
-            href="https://github.com/Saber1Y/OmniCFO"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-text-muted transition-all hover:border-purple/30 hover:text-text"
-          >
-            GitHub
-            <ExternalLink className="h-3 w-3" />
-          </a>
         </div>
 
+        {/* Divider */}
+        <div className="hidden h-4 w-px bg-rule md:block" />
+
+        {/* GitHub */}
+        <a
+          href="https://github.com/Saber1Y/OmniCFO"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden rounded-full px-3 py-1.5 text-[13px] text-ink-muted transition-colors hover:text-ink md:block"
+        >
+          GitHub
+        </a>
+
+        {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="text-text-muted md:hidden"
+          className="ml-1 rounded-full p-1.5 text-ink-muted md:hidden"
         >
           {mobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
-      </div>
+      </nav>
 
+      {/* Mobile menu */}
       {mobileOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="border-t border-border bg-bg/95 px-6 py-3 md:hidden"
-        >
+        <div className="absolute top-full left-4 right-4 mt-2 rounded-2xl border border-rule bg-paper/95 p-3 backdrop-blur-md md:hidden">
           {navLinks.map((link) => (
             <a
               key={link.label}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block py-2 text-xs text-text-muted hover:text-text"
+              className="block rounded-lg px-3 py-2 text-sm text-ink-muted hover:text-ink"
             >
               {link.label}
             </a>
           ))}
-        </motion.div>
+          <div className="my-1 h-px bg-rule" />
+          <a
+            href="https://github.com/Saber1Y/OmniCFO"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block rounded-lg px-3 py-2 text-sm text-ink-muted hover:text-ink"
+          >
+            GitHub
+          </a>
+        </div>
       )}
-    </motion.nav>
+    </div>
   );
 }

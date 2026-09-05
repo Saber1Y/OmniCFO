@@ -36,11 +36,11 @@ function formatDate(iso: string): string {
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  AUTO_APPROVED: { label: "AUTO_APPROVED", color: "text-green", bg: "bg-green-dim" },
-  PAYMENT_INITIATED: { label: "PAYMENT_INITIATED", color: "text-green", bg: "bg-green-dim" },
-  PENDING_APPROVAL: { label: "PENDING_APPROVAL", color: "text-amber", bg: "bg-amber-dim" },
-  REJECTED: { label: "REJECTED", color: "text-text-muted", bg: "bg-bg-surface" },
-  DRAFT: { label: "DRAFT", color: "text-text-muted", bg: "bg-bg-surface" },
+  AUTO_APPROVED: { label: "AUTO_APPROVED", color: "text-green", bg: "bg-green-soft" },
+  PAYMENT_INITIATED: { label: "PAYMENT_INITIATED", color: "text-green", bg: "bg-green-soft" },
+  PENDING_APPROVAL: { label: "PENDING_APPROVAL", color: "text-amber", bg: "bg-amber-soft" },
+  REJECTED: { label: "REJECTED", color: "text-ink-muted", bg: "bg-paper-raised" },
+  DRAFT: { label: "DRAFT", color: "text-ink-muted", bg: "bg-paper-raised" },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -55,25 +55,25 @@ function StatusBadge({ status }: { status: string }) {
 function DetailModal({ invoice, onClose }: { invoice: Invoice; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-lg rounded-lg border border-border bg-bg-raised p-5">
+      <div className="w-full max-w-lg rounded-lg border border-rule bg-paper-raised p-5">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-text-muted" />
-            <span className="text-sm font-semibold text-text">Invoice Detail</span>
+            <Eye className="h-4 w-4 text-ink-muted" />
+            <span className="text-sm font-semibold text-ink">Invoice Detail</span>
           </div>
-          <button onClick={onClose} className="text-text-muted hover:text-text"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-ink-muted hover:text-ink"><X className="h-4 w-4" /></button>
         </div>
         <div className="space-y-3">
           {[
-            { label: "Invoice ID", value: <span className="font-mono text-xs text-text">{invoice.invoice_id}</span> },
-            { label: "Internal ID", value: <span className="font-mono text-[10px] text-text-muted">{invoice.id}</span> },
-            { label: "Vendor", value: <span className="text-xs text-text">{invoice.vendor_name}</span> },
-            { label: "Amount", value: <span className="font-mono text-xs font-semibold text-text">{formatCents(invoice.amount_cents)}</span> },
+            { label: "Invoice ID", value: <span className="font-mono text-xs text-ink">{invoice.invoice_id}</span> },
+            { label: "Internal ID", value: <span className="font-mono text-[10px] text-ink-muted">{invoice.id}</span> },
+            { label: "Vendor", value: <span className="text-xs text-ink">{invoice.vendor_name}</span> },
+            { label: "Amount", value: <span className="font-mono text-xs font-semibold text-ink">{formatCents(invoice.amount_cents)}</span> },
             { label: "Status", value: <StatusBadge status={invoice.status} /> },
-            { label: "Created", value: <span className="font-mono text-[10px] text-text-muted">{formatDate(invoice.created_at)}</span> },
+            { label: "Created", value: <span className="font-mono text-[10px] text-ink-muted">{formatDate(invoice.created_at)}</span> },
           ].map((row) => (
-            <div key={row.label} className="flex justify-between border-b border-border pb-2">
-              <span className="text-xs text-text-muted">{row.label}</span>
+            <div key={row.label} className="flex justify-between border-b border-rule pb-2">
+              <span className="text-xs text-ink-muted">{row.label}</span>
               {row.value}
             </div>
           ))}
@@ -81,15 +81,15 @@ function DetailModal({ invoice, onClose }: { invoice: Invoice; onClose: () => vo
         <div className="mt-5 flex gap-2">
           {invoice.status === "PENDING_APPROVAL" && (
             <>
-              <button className="flex-1 rounded-md border border-green/30 bg-green-dim py-2 text-xs font-medium text-green hover:bg-green/15">
+              <button className="flex-1 rounded-md border border-green/30 bg-green-soft py-2 text-xs font-medium text-green hover:bg-green/15">
                 Approve
               </button>
-              <button className="flex-1 rounded-md border border-border bg-bg-surface py-2 text-xs font-medium text-text-muted hover:text-text">
+              <button className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs font-medium text-ink-muted hover:text-ink">
                 Reject
               </button>
             </>
           )}
-          <button onClick={onClose} className="flex-1 rounded-md border border-border bg-bg-surface py-2 text-xs text-text-muted hover:text-text">
+          <button onClick={onClose} className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs text-ink-muted hover:text-ink">
             Close
           </button>
         </div>
@@ -170,18 +170,18 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-text">Invoices & Payables</h1>
-          <p className="text-[10px] text-text-muted">
+          <h1 className="text-lg font-semibold text-ink">Invoices & Payables</h1>
+          <p className="text-[10px] text-ink-muted">
             {loading ? "Loading..." : `${filtered.length} invoices - ${formatCents(totalAmount)} total`}
           </p>
         </div>
         <div className="flex gap-2">
           <button onClick={fetchInvoices}
-            className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-[10px] text-text-muted hover:text-text">
+            className="flex items-center gap-1 rounded-md border border-rule px-3 py-1.5 text-[10px] text-ink-muted hover:text-ink">
             <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button onClick={() => setShowForm(true)}
-            className="flex items-center gap-1 rounded-md bg-purple px-3 py-1.5 text-[10px] font-semibold text-bg hover:bg-purple/90">
+            className="flex items-center gap-1 rounded-md bg-purple px-3 py-1.5 text-[10px] font-semibold text-paper hover:bg-ink/90">
             <Plus className="h-3 w-3" /> New Invoice
           </button>
         </div>
@@ -189,28 +189,28 @@ export default function InvoicesPage() {
 
       {/* Filters + Search */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 rounded-md border border-border bg-bg-raised px-2 py-1">
+        <div className="flex items-center gap-1 rounded-md border border-rule bg-paper-raised px-2 py-1">
           {filters.map((f) => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`rounded px-2 py-1 text-[10px] capitalize transition-colors ${filter === f ? "bg-purple-dim text-purple" : "text-text-muted hover:text-text"}`}>
+              className={`rounded px-2 py-1 text-[10px] capitalize transition-colors ${filter === f ? "bg-amber-soft text-ink" : "text-ink-muted hover:text-ink"}`}>
               {f}
             </button>
           ))}
         </div>
-        <div className="flex flex-1 items-center gap-2 rounded-md border border-border bg-bg-raised px-3 py-1.5">
-          <Search className="h-3 w-3 text-text-muted" />
+        <div className="flex flex-1 items-center gap-2 rounded-md border border-rule bg-paper-raised px-3 py-1.5">
+          <Search className="h-3 w-3 text-ink-muted" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search invoices..."
-            className="flex-1 bg-transparent text-xs text-text placeholder:text-text-muted/50 outline-none" />
+            className="flex-1 bg-transparent text-xs text-ink placeholder:text-ink-muted/50 outline-none" />
         </div>
         <button onClick={() => setSort(sort === "date" ? "amount" : "date")}
-          className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-[10px] text-text-muted hover:text-text">
+          className="flex items-center gap-1 rounded-md border border-rule px-2.5 py-1.5 text-[10px] text-ink-muted hover:text-ink">
           <ArrowUpDown className="h-3 w-3" /> {sort === "date" ? "Date" : "Amount"}
         </button>
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border bg-bg-raised">
-        <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] gap-2 border-b border-border px-4 py-2 text-[9px] uppercase tracking-wider text-text-muted">
+      <div className="rounded-lg border border-rule bg-paper-raised">
+        <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] gap-2 border-b border-rule px-4 py-2 text-[9px] uppercase tracking-wider text-ink-muted">
           <div>Invoice</div>
           <div>Vendor</div>
           <div>Amount</div>
@@ -219,23 +219,23 @@ export default function InvoicesPage() {
           <div></div>
         </div>
         {loading ? (
-          <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-text-muted animate-spin" /></div>
+          <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-ink-muted animate-spin" /></div>
         ) : filtered.length === 0 ? (
           <div className="flex h-40 flex-col items-center justify-center gap-2">
-            <span className="text-xs text-text-muted">No invoices found</span>
+            <span className="text-xs text-ink-muted">No invoices found</span>
           </div>
         ) : (
           <div className="divide-y divide-border">
             {filtered.map((inv) => (
               <div key={inv.id}
-                className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] items-center gap-2 px-4 py-2.5 transition-colors hover:bg-bg-surface">
-                <div className="font-mono text-xs text-text">{inv.invoice_id}</div>
-                <div className="text-xs text-text-muted truncate">{inv.vendor_name}</div>
-                <div className="font-mono text-xs font-semibold text-text">{formatCents(inv.amount_cents)}</div>
+                className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] items-center gap-2 px-4 py-2.5 transition-colors hover:bg-paper-raised">
+                <div className="font-mono text-xs text-ink">{inv.invoice_id}</div>
+                <div className="text-xs text-ink-muted truncate">{inv.vendor_name}</div>
+                <div className="font-mono text-xs font-semibold text-ink">{formatCents(inv.amount_cents)}</div>
                 <div><StatusBadge status={inv.status} /></div>
-                <div className="font-mono text-[10px] text-text-muted">{formatDate(inv.created_at)}</div>
+                <div className="font-mono text-[10px] text-ink-muted">{formatDate(inv.created_at)}</div>
                 <div className="flex justify-end">
-                  <button onClick={() => setSelected(inv.id)} className="rounded p-1 text-text-muted hover:text-text">
+                  <button onClick={() => setSelected(inv.id)} className="rounded p-1 text-ink-muted hover:text-ink">
                     <Eye className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -248,21 +248,21 @@ export default function InvoicesPage() {
       {/* Submit Form */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-lg border border-border bg-bg-raised p-5">
+          <div className="w-full max-w-md rounded-lg border border-rule bg-paper-raised p-5">
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-sm font-semibold text-text">New Invoice</span>
-              <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text"><X className="h-4 w-4" /></button>
+              <span className="text-sm font-semibold text-ink">New Invoice</span>
+              <button onClick={() => setShowForm(false)} className="text-ink-muted hover:text-ink"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input name="invoice_id" type="text" placeholder="Invoice ID (e.g. INV-2849)" required
-                className="w-full rounded-md border border-border bg-bg-surface px-3 py-2 font-mono text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-purple/40" />
+                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 font-mono text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" />
               <input name="vendor" type="text" placeholder="Vendor name" required
-                className="w-full rounded-md border border-border bg-bg-surface px-3 py-2 text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-purple/40" />
+                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" />
               <input name="amount" type="number" step="0.01" min="0" placeholder="Amount (USD)" required
-                className="w-full rounded-md border border-border bg-bg-surface px-3 py-2 font-mono text-xs text-text placeholder:text-text-muted/50 outline-none focus:border-purple/40" />
+                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 font-mono text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" />
               <div className="flex gap-2 pt-1">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 rounded-md border border-border bg-bg-surface py-2 text-xs text-text-muted">Cancel</button>
-                <button type="submit" className="flex-1 rounded-md bg-purple py-2 text-xs font-semibold text-bg hover:bg-purple/90">Submit</button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs text-ink-muted">Cancel</button>
+                <button type="submit" className="flex-1 rounded-md bg-purple py-2 text-xs font-semibold text-paper hover:bg-ink/90">Submit</button>
               </div>
             </form>
           </div>

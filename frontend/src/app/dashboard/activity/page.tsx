@@ -62,14 +62,14 @@ const statusColors = {
   success: "text-green",
   pending: "text-amber",
   error: "text-red-400",
-  skipped: "text-text-muted",
+  skipped: "text-ink-muted",
 };
 
 const statusBg = {
-  success: "bg-green-dim",
-  pending: "bg-amber-dim",
+  success: "bg-green-soft",
+  pending: "bg-amber-soft",
   error: "bg-red-500/10",
-  skipped: "bg-bg-surface",
+  skipped: "bg-paper-raised",
 };
 
 // --- Page ---
@@ -89,12 +89,12 @@ export default function ActivityPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-text">Agent Activity & DAG Traces</h1>
-          <p className="text-[10px] text-text-muted">
+          <h1 className="text-lg font-semibold text-ink">Agent Activity & DAG Traces</h1>
+          <p className="text-[10px] text-ink-muted">
             Full execution history with state transitions and structured logs
           </p>
         </div>
-        <button className="flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-[10px] text-text-muted hover:text-text">
+        <button className="flex items-center gap-1 rounded-md border border-rule px-3 py-1.5 text-[10px] text-ink-muted hover:text-ink">
           <RefreshCw className="h-3 w-3" />
           Refresh
         </button>
@@ -102,10 +102,10 @@ export default function ActivityPage() {
 
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
         {/* Execution List */}
-        <div className="rounded-lg border border-border bg-bg-raised">
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            <Activity className="h-4 w-4 text-text-muted" />
-            <span className="text-xs font-semibold text-text">Executions</span>
+        <div className="rounded-lg border border-rule bg-paper-raised">
+          <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
+            <Activity className="h-4 w-4 text-ink-muted" />
+            <span className="text-xs font-semibold text-ink">Executions</span>
           </div>
           <div className="divide-y divide-border">
             {executions.map((exec) => (
@@ -114,19 +114,19 @@ export default function ActivityPage() {
                 onClick={() => setSelected(exec.id)}
                 className={`flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors ${
                   selected === exec.id
-                    ? "bg-purple-dim"
-                    : "hover:bg-bg-surface"
+                    ? "bg-amber-soft"
+                    : "hover:bg-paper-raised"
                 }`}
               >
                 <div>
-                  <div className="font-mono text-xs text-text">{exec.id}</div>
-                  <div className="font-mono text-[9px] text-text-muted">{exec.time}</div>
+                  <div className="font-mono text-xs text-ink">{exec.id}</div>
+                  <div className="font-mono text-[9px] text-ink-muted">{exec.time}</div>
                 </div>
                 <div className="text-right">
                   <div className={`text-[9px] font-mono uppercase tracking-wider ${statusColors[exec.status]}`}>
                     {exec.status}
                   </div>
-                  <div className="font-mono text-[9px] text-text-muted">{exec.duration}</div>
+                  <div className="font-mono text-[9px] text-ink-muted">{exec.duration}</div>
                 </div>
               </button>
             ))}
@@ -134,19 +134,19 @@ export default function ActivityPage() {
         </div>
 
         {/* Trace View */}
-        <div className="rounded-lg border border-border bg-bg-raised">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="rounded-lg border border-rule bg-paper-raised">
+          <div className="flex items-center justify-between border-b border-rule px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-text">DAG Trace</span>
-              <span className="font-mono text-[10px] text-purple">{selected}</span>
+              <span className="text-xs font-semibold text-ink">DAG Trace</span>
+              <span className="font-mono text-[10px] text-ink">{selected}</span>
             </div>
-            <span className="font-mono text-[10px] text-text-muted">
+            <span className="font-mono text-[10px] text-ink-muted">
               {currentTrace.length} nodes - {currentTrace[currentTrace.length - 1]?.time || ""}
             </span>
           </div>
 
           {/* Pipeline visualization */}
-          <div className="border-b border-border px-4 py-3">
+          <div className="border-b border-rule px-4 py-3">
             <div className="flex items-center gap-1">
               {["Ingestion", "Audit", "Policy", "Settlement"].map((step, i) => {
                 const entry = currentTrace[currentTrace.length - 1 - i];
@@ -157,15 +157,15 @@ export default function ActivityPage() {
                     <div
                       className={`flex h-7 items-center rounded px-2 text-[9px] font-mono ${
                         isPending
-                          ? "bg-amber-dim text-amber"
+                          ? "bg-amber-soft text-amber"
                           : isActive
-                          ? "bg-green-dim text-green"
-                          : "bg-bg-surface text-text-muted"
+                          ? "bg-green-soft text-green"
+                          : "bg-paper-raised text-ink-muted"
                       }`}
                     >
                       {step}
                     </div>
-                    {i < 3 && <ChevronRight className="mx-0.5 h-3 w-3 text-text-muted/30" />}
+                    {i < 3 && <ChevronRight className="mx-0.5 h-3 w-3 text-ink-muted/30" />}
                   </div>
                 );
               })}
@@ -188,24 +188,24 @@ export default function ActivityPage() {
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[9px] text-text-muted">{entry.time}</span>
-                          <span className="text-xs font-medium text-text">{entry.node}</span>
+                          <span className="font-mono text-[9px] text-ink-muted">{entry.time}</span>
+                          <span className="text-xs font-medium text-ink">{entry.node}</span>
                         </div>
                         <span className={`font-mono text-[9px] uppercase tracking-wider ${statusColors[entry.status]}`}>
                           {entry.status}
                         </span>
                       </div>
-                      <div className="mt-0.5 text-[11px] text-text-muted">{entry.msg}</div>
+                      <div className="mt-0.5 text-[11px] text-ink-muted">{entry.msg}</div>
                     </div>
                     <ChevronDown
-                      className={`mt-1 h-3 w-3 shrink-0 text-text-muted transition-transform ${
+                      className={`mt-1 h-3 w-3 shrink-0 text-ink-muted transition-transform ${
                         expanded[entry.time + entry.node] ? "rotate-180" : ""
                       }`}
                     />
                   </button>
                   {expanded[entry.time + entry.node] && (
-                    <div className="ml-9 mt-2 rounded-md border border-border bg-bg-surface p-2.5">
-                      <div className="font-mono text-[10px] leading-relaxed text-text-muted">
+                    <div className="ml-9 mt-2 rounded-md border border-rule bg-paper-raised p-2.5">
+                      <div className="font-mono text-[10px] leading-relaxed text-ink-muted">
                         {entry.detail}
                       </div>
                     </div>

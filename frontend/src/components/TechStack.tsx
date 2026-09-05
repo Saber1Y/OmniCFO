@@ -1,34 +1,29 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Shield, CreditCard, Activity, Database } from "lucide-react";
 
-const techCards = [
+const techItems = [
   {
-    icon: Shield,
+    role: "State management",
     name: "Agent Orchestrator",
-    role: "State Management",
-    desc: "Zero-loss state persistence during human review delays. Coordinates agent sessions, manages state transitions, and handles delegation across the treasury pipeline.",
+    desc: "Zero-loss state persistence during human review delays. Coordinates agent sessions and manages state transitions across the treasury pipeline.",
     url: "https://github.com/anthropics/agent-orchestrator",
   },
   {
-    icon: CreditCard,
-    name: "Dodo Payments",
     role: "Merchant of Record",
-    desc: "Acts as the Merchant of Record, handling compliance, tax, and card-network disputes seamlessly out-of-the-box. Checkout sessions for compliant fiat settlements.",
+    name: "Dodo Payments",
+    desc: "Acts as the Merchant of Record, handling compliance, tax, and card-network disputes seamlessly. Checkout sessions for compliant fiat settlements.",
     url: "https://dodopayments.com",
   },
   {
-    icon: Activity,
-    name: "Neatlogs",
     role: "Observability",
-    desc: "Structured logging traces every decision point -- ingestion, audit, policy check, approval, and settlement -- for complete audit compliance.",
+    name: "Neatlogs",
+    desc: "Structured logging traces every decision point - ingestion, audit, policy check, approval, and settlement - for complete audit compliance.",
     url: "https://neatlogs.dev",
   },
   {
-    icon: Database,
+    role: "Policy storage",
     name: "Supabase",
-    role: "Policy Storage",
     desc: "PostgreSQL-backed invoice storage with row-level security, real-time subscriptions, and edge functions. Deterministic state recovery on failure.",
     url: "https://supabase.com",
   },
@@ -37,55 +32,45 @@ const techCards = [
 export function TechStack() {
   return (
     <section id="tech" className="py-24">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-4xl px-6">
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5 }}
           className="mb-14"
         >
-          <h2 className="text-3xl font-bold tracking-tight text-text md:text-4xl">
-            Tech Stack
+          <h2 className="font-serif text-3xl font-bold tracking-tight text-ink md:text-4xl">
+            Tech stack
           </h2>
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-text-muted">
+          <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-muted">
             Built on battle-tested infrastructure for autonomous financial
-            operations. Solves real enterprise finance problems -- closing the
-            books, avoiding treasury drain, and ensuring compliance at every
-            step.
+            operations. Solves real enterprise finance problems.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {techCards.map((card, i) => {
-            const Icon = card.icon;
-            return (
-              <motion.a
-                key={card.name}
-                href={card.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.4, delay: i * 0.06 }}
-                className="group rounded-lg border border-border bg-bg-raised p-5 transition-all hover:border-purple/20"
-              >
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-border bg-bg-surface">
-                  <Icon className="h-4 w-4 text-text-muted" />
-                </div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-text-muted">
-                  {card.role}
-                </div>
-                <h3 className="mt-1 text-sm font-semibold text-text">
-                  {card.name}
-                </h3>
-                <p className="mt-2 text-xs leading-relaxed text-text-muted">
-                  {card.desc}
-                </p>
-              </motion.a>
-            );
-          })}
+        <div className="border-t-2 border-ink">
+          {techItems.map((item, i) => (
+            <motion.a
+              key={item.name}
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.4, delay: i * 0.05 }}
+              className="block border-b border-rule py-6 transition-colors hover:bg-paper-raised"
+            >
+              <div className="text-[12px] text-ink-muted">{item.role}</div>
+              <div className="mt-1 font-serif text-xl font-bold text-ink">
+                {item.name}
+              </div>
+              <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-ink-muted">
+                {item.desc}
+              </p>
+            </motion.a>
+          ))}
         </div>
       </div>
     </section>
