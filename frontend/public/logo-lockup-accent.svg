@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none">
+  <!-- Accent version: ink on paper with approved-green checkmark -->
+  <g transform="translate(8, 8)">
+    <rect x="32" y="8" width="1.5" height="64" fill="#1C1917"/>
+    <g stroke="#1C1917" stroke-width="0.5" stroke-opacity="0.2">
+      <line x1="12" y1="16" x2="52" y2="16"/>
+      <line x1="12" y1="24" x2="52" y2="24"/>
+      <line x1="12" y1="32" x2="52" y2="32"/>
+      <line x1="12" y1="40" x2="52" y2="40"/>
+      <line x1="12" y1="48" x2="52" y2="48"/>
+      <line x1="12" y1="56" x2="52" y2="56"/>
+      <line x1="12" y1="64" x2="52" y2="64"/>
+    </g>
+    <!-- Checkmark in approved green (from product status system) -->
+    <path d="M26 40L32 46L40 34" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M52 8L52 16L44 8Z" fill="#1C1917" opacity="0.15"/>
+    <path d="M52 8L52 16L44 8Z" stroke="#1C1917" stroke-width="0.5" stroke-opacity="0.3" fill="none"/>
+  </g>
+  <g transform="translate(80, 0)">
+    <text x="0" y="48" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="400" letter-spacing="-0.5" fill="#1C1917">Omni</text>
+    <text x="92" y="48" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="700" letter-spacing="1.2" fill="#1C1917">CFO</text>
+    <line x1="0" y1="54" x2="140" y2="54" stroke="#1C1917" stroke-width="1" stroke-opacity="0.15"/>
+  </g>
+</svg>

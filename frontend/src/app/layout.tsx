@@ -20,6 +20,12 @@ export const metadata: Metadata = {
     "The self-healing financial agent that audits invoices, enforces fail-closed policy gates, and triggers compliant fiat settlements through Dodo Payments.",
   icons: {
     icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/logo-icon.svg",
+    other: [
+      { rel: "icon", type: "image/svg+xml", url: "/favicon.svg" },
+      { rel: "icon", type: "image/svg+xml", url: "/logo-icon.svg", sizes: "any" },
+    ],
   },
 };
 

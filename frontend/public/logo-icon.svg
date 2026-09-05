@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- Ruled ledger column with integrated checkmark -->
+  <!-- Vertical column rule -->
+  <rect x="64" y="16" width="1.5" height="96" fill="#1C1917"/>
+  <!-- Horizontal ledger rules (faint) -->
+  <g stroke="#1C1917" stroke-width="0.5" stroke-opacity="0.2">
+    <line x1="24" y1="32" x2="104" y2="32"/>
+    <line x1="24" y1="48" x2="104" y2="48"/>
+    <line x1="24" y1="64" x2="104" y2="64"/>
+    <line x1="24" y1="80" x2="104" y2="80"/>
+    <line x1="24" y1="96" x2="104" y2="96"/>
+    <line x1="24" y1="112" x2="104" y2="112"/>
+  </g>
+  <!-- Checkmark integrated into the ruled column - the "audited" mark -->
+  <path d="M52 60L60 68L76 52" stroke="#1C1917" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Subtle paper corner fold at top-right -->
+  <path d="M104 16L104 28L92 16Z" fill="#1C1917" opacity="0.15"/>
+  <path d="M104 16L104 28L92 16Z" stroke="#1C1917" stroke-width="0.75" stroke-opacity="0.3" fill="none"/>
+</svg>
