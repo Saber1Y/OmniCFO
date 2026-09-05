@@ -184,6 +184,7 @@ export default function DashboardOverview() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
+  const [threshold, setThreshold] = useState(500);
 
   const fetchInvoices = useCallback(async () => {
     try {
@@ -199,7 +200,19 @@ export default function DashboardOverview() {
     }
   }, []);
 
-  useEffect(() => { fetchInvoices(); }, [fetchInvoices]);
+  const fetchThreshold = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/api/policy`);
+      if (res.ok) {
+        const data = await res.json();
+        setThreshold(Math.round((data.rules?.autoApproveThresholdCents ?? 50000) / 100));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => { fetchInvoices(); fetchThreshold(); }, [fetchInvoices, fetchThreshold]);
 
   const handleSubmit = async (data: { invoice_id: string; vendor_name: string; amount_cents: number }) => {
     try {
@@ -263,7 +276,7 @@ export default function DashboardOverview() {
         <MetricCard label="Total Invoices" value={String(totalInvoices)} icon={FileText} />
         <MetricCard label="Volume Cleared" value={formatCents(totalVolume)} icon={DollarSign} />
         <MetricCard label="Pending Reviews" value={String(pendingCount)} icon={Clock} />
-        <MetricCard label="Autonomous Rate" value={`${autoRate}%`} trend="Under $500 threshold" icon={Zap} />
+        <MetricCard label="Autonomous Rate" value={`${autoRate}%`} trend={`Under $${threshold} threshold`} icon={Zap} />
       </div>
 
       {/* Charts */}
