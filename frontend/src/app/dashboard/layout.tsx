@@ -85,7 +85,7 @@ export default function DashboardLayout({
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             {!collapsed && (
               <span className="text-[10px] text-muted-foreground">
-                AO Daemon: Connected
+                Connected
               </span>
             )}
           </div>
@@ -101,17 +101,9 @@ export default function DashboardLayout({
               OmniCFO - Hackathon 2026
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="font-mono text-[10px] text-muted-foreground">
-                AO Daemon
-              </span>
-            </div>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-accent/10 text-[10px] font-semibold text-accent">
-              SC
-            </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="font-mono text-[10px] text-muted-foreground">Live</span>
           </div>
         </header>
 
