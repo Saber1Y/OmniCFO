@@ -1,0 +1,45 @@
+import express from "express";
+import { invoiceRouter } from "./routes/invoice.js";
+import { webhookRouter } from "./routes/webhook.js";
+import { createLogger } from "./logger.js";
+
+const log = createLogger("app");
+
+export function createApp(): express.Express {
+  const app = express();
+
+  // Parse JSON bodies
+  app.use(express.json());
+
+  // Request logging middleware
+  app.use((req, _res, next) => {
+    log.debug(`${req.method} ${req.path}`, {
+      method: req.method,
+      path: req.path,
+      ip: req.ip,
+    });
+    next();
+  });
+
+  // Health check
+  app.get("/health", (_req, res) => {
+    res.json({ status: "ok", service: "OmniCFO", timestamp: new Date().toISOString() });
+  });
+
+  // Routes
+  app.use("/api/invoices", invoiceRouter);
+  app.use("/webhook", webhookRouter);
+
+  // 404 handler
+  app.use((_req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
+
+  // Error handler
+  app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    log.error("Unhandled error", { error: err.message, stack: err.stack });
+    res.status(500).json({ error: "Internal server error" });
+  });
+
+  return app;
+}

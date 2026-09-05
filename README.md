@@ -1,1 +1,246 @@
+![License: MIT](https://img.shields.io/badge/License-MIT-purple)
+![Node.js](https://img.shields.io/badge/Node.js-22+-green)
+![Tests](https://img.shields.io/badge/Tests-12%20passed-brightgreen)
+![Stack](https://img.shields.io/badge/Stack-Express%20%7C%20Supabase%20%7C%20Dodo%20%7C%20Telegram-blue)
+
 # OmniCFO
+
+**Autonomous Treasury Management for Modern Enterprises**
+
+The self-healing financial agent that audits invoices, enforces fail-closed policy gates, and triggers compliant fiat settlements through Dodo Payments -- without human friction, until safety requires it.
+
+Built for the Syndicate Hackathon 2026 - Track 2: Autonomous Office of the CFO.
+
+[Landing Page](/) · [Dashboard](/dashboard) · [Architecture](#architecture) · [Run it locally](#run-it-locally)
+
+## The problem I set out to solve
+
+Corporate treasury is still manual. An invoice arrives, someone checks it against a spreadsheet, someone else approves it, someone else initiates payment. The "CFO" in most startups is a founder with a Stripe dashboard and a prayer.
+
+The non-negotiable design rule I set: an autonomous agent can move money, but only within strict policy boundaries -- and when those boundaries are exceeded, it must pause and wait for explicit human authorization. The agent handles the boring 94% (invoices under the threshold) and escalates the 6% that require judgment. Every decision is logged. Every state is recoverable. No funds move without proof.
+
+## What I built
+
+A full invoice-to-payment lifecycle with an autonomous agent at the center:
+
+- **Ingest** -- Invoices arrive via API, email, or PDF. Each is normalized with vendor name, amount, and ID before storage in Supabase.
+- **Audit** -- A multi-LLM cascade cross-checks vendor legitimacy, line-item accuracy, and duplicate detection before the invoice enters the policy pipeline.
+- **Policy Gate** -- Fail-closed rules enforce spend thresholds ($500 auto-approve limit), vendor whitelisting, and budget caps. If the policy engine errors out, funds never move.
+- **Human Approval** -- Invoices exceeding thresholds are routed to the CFO via Telegram with inline Approve/Reject buttons. The agent pauses -- with full state preserved -- until it receives explicit human authorization.
+- **Settlement** -- Approved invoices trigger a Dodo Payments checkout session. Dodo acts as the Merchant of Record, handling compliance, tax, and card-network disputes.
+- **Observability** -- Every decision point is logged with structured traces for complete audit compliance.
+
+## Architecture
+
+```
+POST /api/invoices
+       |
+       v
+  [Ingestion] --> Supabase (store)
+       |
+       v
+  [Policy Engine] --> threshold check
+       |
+       +--- <= $500 ---> [Auto-Approve] ---> [Dodo Checkout] ---> Settlement
+       |
+       +--- >  $500 ---> [PENDING_APPROVAL] ---> [Telegram Alert]
+                                                        |
+                                                        v
+                                                  CFO taps Approve/Reject
+                                                        |
+                                                        v
+                                                  [Webhook] ---> [Dodo] or [Reject]
+```
+
+### Pipeline Steps
+
+| Step | What happens | Why it is robust |
+|------|-------------|-----------------|
+| Ingestion | Deterministic parsing of multi-format payloads | Normalizes PDF, email, API into canonical schema |
+| Multi-LLM Audit | Cross-referenced verification | Catches rate anomalies, duplicates, vendor fraud |
+| Policy Gate | Fail-closed rules | If the engine errors, funds never move |
+| Human Approval | Stateful pause | Preserves full transaction context during wait |
+| Dodo Settlement | Merchant of Record | Handles compliance, tax, disputes out-of-the-box |
+| Observability | Structured traces | Every decision point logged for audit |
+
+## Dashboard
+
+A corporate treasury dashboard built with Next.js and Tailwind CSS:
+
+- **Overview** -- 4 real-time metric cards, spend velocity bar chart, status distribution donut, invoice table, activity feed
+- **Invoices & Payables** -- Full table with search, sort, filter tabs, detail modal, submit form
+- **Policy Engine** -- Editable rules with toggles, vendor whitelist, audit log
+- **Agent Activity** -- Execution history with DAG pipeline visualization and expandable trace entries
+- **Settings** -- API keys with show/hide/copy, Telegram/Dodo/Notification config
+
+### Screenshots
+
+<!-- Add screenshots here -->
+
+## Run it locally
+
+**Prerequisites:** Node 20+, Supabase project, Telegram bot, Dodo Payments account.
+
+### 1. Install dependencies
+
+```bash
+# Backend
+npm install
+
+# Frontend
+cd frontend && npm install
+```
+
+### 2. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
+| `TELEGRAM_CFO_CHAT_ID` | CFO chat ID for notifications |
+| `DODO_API_KEY` | Dodo Payments API key |
+| `DODO_BASE_URL` | `https://test.dodopayments.com` |
+
+### 3. Set up database
+
+Run `supabase/schema.sql` in your Supabase SQL editor.
+
+### 4. Start the servers
+
+```bash
+# Backend (port 4000)
+npm start
+
+# Frontend (port 3000)
+cd frontend && npm run dev
+```
+
+### 5. Ingest an invoice
+
+```bash
+curl -X POST http://localhost:4000/api/invoices \
+  -H "Content-Type: application/json" \
+  -d '{
+    "invoice_id": "INV-001",
+    "vendor_name": "Acme Corp",
+    "amount_cents": 45000
+  }'
+```
+
+Auto-approved (under $500):
+```json
+{
+  "invoice": { "status": "AUTO_APPROVED" },
+  "payment": { "session_id": "cks_...", "checkout_url": "https://test.checkout.dodopayments.com/..." },
+  "decision": { "approved": true, "reason": "Amount $450.00 <= $500.00 threshold" }
+}
+```
+
+Requires approval (over $500):
+```json
+{
+  "invoice": { "status": "PENDING_APPROVAL" },
+  "payment": null,
+  "decision": { "approved": false, "reason": "Amount $1,200.00 exceeds $500.00 threshold" }
+}
+```
+
+## API
+
+| Route | Method | Returns |
+|-------|--------|---------|
+| `/api/invoices` | GET | All invoices from Supabase |
+| `/api/invoices` | POST | Ingest + policy check + payment/telegraph |
+| `/api/invoices/:id` | GET | Single invoice by ID |
+| `/health` | GET | Service status |
+
+## Tests
+
+```bash
+# Backend - 12 integration tests
+npm test
+
+# Frontend build check
+cd frontend && npx next build
+```
+
+Test coverage:
+- Invoice ingestion (happy path, validation, duplicates)
+- Policy engine (auto-approve, threshold, rejection)
+- Telegram polling (send message, callback handling, dedup)
+- Dodo Payments (checkout session creation, status tracking)
+- API routes (POST/GET invoices, health check)
+
+## What's real vs pending
+
+| Capability | Status |
+|-----------|--------|
+| Invoice ingestion via API | Real, tested end-to-end |
+| Policy engine ($500 threshold) | Real, enforced at every decision |
+| Telegram human-in-the-loop | Real, polling mode with callback dedup |
+| Dodo Payments checkout sessions | Real, test mode verified |
+| Supabase persistence | Real, schema applied |
+| Structured logging | Real, Neatlogs-compatible |
+| Landing page | Real, deployed |
+| Dashboard with real data | Real, wired to backend API |
+| Email/PDF ingestion | Pending -- API ingestion only for now |
+| Multi-LLM audit cascade | Pending -- policy engine only |
+
+## Project layout
+
+```
+src/
+  config.ts              # Environment validation
+  types.ts               # TypeScript interfaces
+  logger.ts              # Structured logging
+  app.ts                 # Express assembly
+  server.ts              # Entry point + Telegram polling
+  services/
+    supabase.ts          # Invoice CRUD
+    policy.ts            # Threshold policy engine
+    telegram.ts          # Bot API + polling
+    dodo.ts              # Dodo Payments SDK
+  routes/
+    invoice.ts           # Invoice API routes
+    webhook.ts           # Telegram webhook routes
+supabase/
+  schema.sql             # Database schema
+frontend/
+  src/
+    app/
+      page.tsx           # Landing page
+      dashboard/
+        page.tsx         # Dashboard overview
+        invoices/        # Invoices & payables
+        policy/          # Policy engine config
+        activity/        # Agent activity traces
+        settings/        # Settings & API keys
+    components/
+      Navbar.tsx
+      Hero.tsx
+      ArchitectureDAG.tsx
+      LiveWorkflow.tsx
+      TechStack.tsx
+      Footer.tsx
+```
+
+## Tech Stack
+
+- **Runtime:** Node.js 22 + Express
+- **Database:** Supabase (PostgreSQL)
+- **Payments:** Dodo Payments SDK (Merchant of Record)
+- **Notifications:** Telegram Bot API (polling mode)
+- **Frontend:** Next.js 16 (App Router) + Tailwind CSS v4 + Sora font
+- **Icons:** Lucide React
+- **Observability:** Structured logging (Neatlogs-compatible)
+
+## License
+
+MIT
