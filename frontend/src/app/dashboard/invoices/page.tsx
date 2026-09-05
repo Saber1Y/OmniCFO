@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Search,
-  ChevronDown,
   Clock,
   CheckCircle2,
   XCircle,
@@ -11,7 +10,6 @@ import {
   Eye,
   Plus,
   X,
-  Download,
   RefreshCw,
   Filter,
 } from "lucide-react";
@@ -36,11 +34,11 @@ function formatDate(iso: string): string {
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  AUTO_APPROVED: { label: "AUTO_APPROVED", color: "text-green", bg: "bg-green-soft" },
-  PAYMENT_INITIATED: { label: "PAYMENT_INITIATED", color: "text-green", bg: "bg-green-soft" },
-  PENDING_APPROVAL: { label: "PENDING_APPROVAL", color: "text-amber", bg: "bg-amber-soft" },
-  REJECTED: { label: "REJECTED", color: "text-ink-muted", bg: "bg-paper-raised" },
-  DRAFT: { label: "DRAFT", color: "text-ink-muted", bg: "bg-paper-raised" },
+  AUTO_APPROVED: { label: "APPROVED", color: "text-emerald-600", bg: "bg-emerald-50" },
+  PAYMENT_INITIATED: { label: "SETTLED", color: "text-emerald-600", bg: "bg-emerald-50" },
+  PENDING_APPROVAL: { label: "PENDING", color: "text-amber-600", bg: "bg-amber-50" },
+  REJECTED: { label: "REJECTED", color: "text-stone-500", bg: "bg-stone-50" },
+  DRAFT: { label: "DRAFT", color: "text-stone-500", bg: "bg-stone-50" },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -55,25 +53,25 @@ function StatusBadge({ status }: { status: string }) {
 function DetailModal({ invoice, onClose }: { invoice: Invoice; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-lg rounded-lg border border-rule bg-paper-raised p-5">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-ink-muted" />
-            <span className="text-sm font-semibold text-ink">Invoice Detail</span>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-semibold text-foreground">Invoice Detail</span>
           </div>
-          <button onClick={onClose} className="text-ink-muted hover:text-ink"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
         <div className="space-y-3">
           {[
-            { label: "Invoice ID", value: <span className="font-mono text-xs text-ink">{invoice.invoice_id}</span> },
-            { label: "Internal ID", value: <span className="font-mono text-[10px] text-ink-muted">{invoice.id}</span> },
-            { label: "Vendor", value: <span className="text-xs text-ink">{invoice.vendor_name}</span> },
-            { label: "Amount", value: <span className="font-mono text-xs font-semibold text-ink">{formatCents(invoice.amount_cents)}</span> },
+            { label: "Invoice ID", value: <span className="font-mono text-xs text-foreground">{invoice.invoice_id}</span> },
+            { label: "Internal ID", value: <span className="font-mono text-[10px] text-muted-foreground">{invoice.id}</span> },
+            { label: "Vendor", value: <span className="text-xs text-foreground">{invoice.vendor_name}</span> },
+            { label: "Amount", value: <span className="font-mono text-xs font-semibold text-foreground">{formatCents(invoice.amount_cents)}</span> },
             { label: "Status", value: <StatusBadge status={invoice.status} /> },
-            { label: "Created", value: <span className="font-mono text-[10px] text-ink-muted">{formatDate(invoice.created_at)}</span> },
+            { label: "Created", value: <span className="font-mono text-[10px] text-muted-foreground">{formatDate(invoice.created_at)}</span> },
           ].map((row) => (
-            <div key={row.label} className="flex justify-between border-b border-rule pb-2">
-              <span className="text-xs text-ink-muted">{row.label}</span>
+            <div key={row.label} className="flex justify-between border-b border-border pb-2">
+              <span className="text-xs text-muted-foreground">{row.label}</span>
               {row.value}
             </div>
           ))}
@@ -81,15 +79,15 @@ function DetailModal({ invoice, onClose }: { invoice: Invoice; onClose: () => vo
         <div className="mt-5 flex gap-2">
           {invoice.status === "PENDING_APPROVAL" && (
             <>
-              <button className="flex-1 rounded-md border border-green/30 bg-green-soft py-2 text-xs font-medium text-green hover:bg-green/15">
+              <button className="flex-1 rounded-lg border border-emerald-200 bg-emerald-50 py-2 text-xs font-medium text-emerald-600 hover:bg-emerald-100">
                 Approve
               </button>
-              <button className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs font-medium text-ink-muted hover:text-ink">
+              <button className="flex-1 rounded-lg border border-border bg-muted py-2 text-xs font-medium text-muted-foreground hover:text-foreground">
                 Reject
               </button>
             </>
           )}
-          <button onClick={onClose} className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs text-ink-muted hover:text-ink">
+          <button onClick={onClose} className="flex-1 rounded-lg border border-border bg-muted py-2 text-xs text-muted-foreground hover:text-foreground">
             Close
           </button>
         </div>
@@ -170,18 +168,18 @@ export default function InvoicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-ink">Invoices & Payables</h1>
-          <p className="text-[10px] text-ink-muted">
+          <h1 className="text-lg font-semibold text-foreground">Invoices & Payables</h1>
+          <p className="text-[10px] text-muted-foreground">
             {loading ? "Loading..." : `${filtered.length} invoices - ${formatCents(totalAmount)} total`}
           </p>
         </div>
         <div className="flex gap-2">
           <button onClick={fetchInvoices}
-            className="flex items-center gap-1 rounded-md border border-rule px-3 py-1.5 text-[10px] text-ink-muted hover:text-ink">
+            className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
             <RefreshCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button onClick={() => setShowForm(true)}
-            className="flex items-center gap-1 rounded-md bg-purple px-3 py-1.5 text-[10px] font-semibold text-paper hover:bg-ink/90">
+            className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-accent/90">
             <Plus className="h-3 w-3" /> New Invoice
           </button>
         </div>
@@ -189,28 +187,28 @@ export default function InvoicesPage() {
 
       {/* Filters + Search */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 rounded-md border border-rule bg-paper-raised px-2 py-1">
+        <div className="flex items-center gap-1 rounded-lg border border-border bg-card px-2 py-1">
           {filters.map((f) => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`rounded px-2 py-1 text-[10px] capitalize transition-colors ${filter === f ? "bg-amber-soft text-ink" : "text-ink-muted hover:text-ink"}`}>
+              className={`rounded-lg px-2.5 py-1 text-[10px] capitalize transition-colors ${filter === f ? "bg-accent/10 text-accent" : "text-muted-foreground hover:text-foreground"}`}>
               {f}
             </button>
           ))}
         </div>
-        <div className="flex flex-1 items-center gap-2 rounded-md border border-rule bg-paper-raised px-3 py-1.5">
-          <Search className="h-3 w-3 text-ink-muted" />
+        <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5">
+          <Search className="h-3 w-3 text-muted-foreground" />
           <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search invoices..."
-            className="flex-1 bg-transparent text-xs text-ink placeholder:text-ink-muted/50 outline-none" />
+            className="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 outline-none" />
         </div>
         <button onClick={() => setSort(sort === "date" ? "amount" : "date")}
-          className="flex items-center gap-1 rounded-md border border-rule px-2.5 py-1.5 text-[10px] text-ink-muted hover:text-ink">
+          className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
           <ArrowUpDown className="h-3 w-3" /> {sort === "date" ? "Date" : "Amount"}
         </button>
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-rule bg-paper-raised">
-        <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] gap-2 border-b border-rule px-4 py-2 text-[9px] uppercase tracking-wider text-ink-muted">
+      <div className="rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] gap-2 border-b border-border px-5 py-2 text-[9px] uppercase tracking-wider text-muted-foreground">
           <div>Invoice</div>
           <div>Vendor</div>
           <div>Amount</div>
@@ -219,23 +217,23 @@ export default function InvoicesPage() {
           <div></div>
         </div>
         {loading ? (
-          <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-ink-muted animate-spin" /></div>
+          <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" /></div>
         ) : filtered.length === 0 ? (
           <div className="flex h-40 flex-col items-center justify-center gap-2">
-            <span className="text-xs text-ink-muted">No invoices found</span>
+            <span className="text-xs text-muted-foreground">No invoices found</span>
           </div>
         ) : (
           <div className="divide-y divide-border">
             {filtered.map((inv) => (
               <div key={inv.id}
-                className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] items-center gap-2 px-4 py-2.5 transition-colors hover:bg-paper-raised">
-                <div className="font-mono text-xs text-ink">{inv.invoice_id}</div>
-                <div className="text-xs text-ink-muted truncate">{inv.vendor_name}</div>
-                <div className="font-mono text-xs font-semibold text-ink">{formatCents(inv.amount_cents)}</div>
+                className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_80px] items-center gap-2 px-5 py-2.5 transition-colors hover:bg-muted/50">
+                <div className="font-mono text-xs text-foreground">{inv.invoice_id}</div>
+                <div className="text-xs text-muted-foreground truncate">{inv.vendor_name}</div>
+                <div className="font-mono text-xs font-semibold text-foreground">{formatCents(inv.amount_cents)}</div>
                 <div><StatusBadge status={inv.status} /></div>
-                <div className="font-mono text-[10px] text-ink-muted">{formatDate(inv.created_at)}</div>
+                <div className="font-mono text-[10px] text-muted-foreground">{formatDate(inv.created_at)}</div>
                 <div className="flex justify-end">
-                  <button onClick={() => setSelected(inv.id)} className="rounded p-1 text-ink-muted hover:text-ink">
+                  <button onClick={() => setSelected(inv.id)} className="rounded-lg p-1 text-muted-foreground hover:text-foreground">
                     <Eye className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -248,21 +246,21 @@ export default function InvoicesPage() {
       {/* Submit Form */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-md rounded-lg border border-rule bg-paper-raised p-5">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-lg">
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-sm font-semibold text-ink">New Invoice</span>
-              <button onClick={() => setShowForm(false)} className="text-ink-muted hover:text-ink"><X className="h-4 w-4" /></button>
+              <span className="text-sm font-semibold text-foreground">New Invoice</span>
+              <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input name="invoice_id" type="text" placeholder="Invoice ID (e.g. INV-2849)" required
-                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 font-mono text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" />
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50" />
               <input name="vendor" type="text" placeholder="Vendor name" required
-                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" />
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50" />
               <input name="amount" type="number" step="0.01" min="0" placeholder="Amount (USD)" required
-                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 font-mono text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" />
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50" />
               <div className="flex gap-2 pt-1">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs text-ink-muted">Cancel</button>
-                <button type="submit" className="flex-1 rounded-md bg-purple py-2 text-xs font-semibold text-paper hover:bg-ink/90">Submit</button>
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 rounded-lg border border-border bg-muted py-2 text-xs text-muted-foreground">Cancel</button>
+                <button type="submit" className="flex-1 rounded-lg bg-accent py-2 text-xs font-semibold text-white hover:bg-accent/90">Submit</button>
               </div>
             </form>
           </div>

@@ -35,11 +35,11 @@ function formatDate(iso: string): string {
 }
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  AUTO_APPROVED: { label: "AUTO_APPROVED", color: "text-green", bg: "bg-green-soft" },
-  PAYMENT_INITIATED: { label: "PAYMENT_INITIATED", color: "text-green", bg: "bg-green-soft" },
-  PENDING_APPROVAL: { label: "PENDING_APPROVAL", color: "text-amber", bg: "bg-amber-soft" },
-  REJECTED: { label: "REJECTED", color: "text-ink-muted", bg: "bg-paper-raised" },
-  DRAFT: { label: "DRAFT", color: "text-ink-muted", bg: "bg-paper-raised" },
+  AUTO_APPROVED: { label: "APPROVED", color: "text-emerald-600", bg: "bg-emerald-50" },
+  PAYMENT_INITIATED: { label: "SETTLED", color: "text-emerald-600", bg: "bg-emerald-50" },
+  PENDING_APPROVAL: { label: "PENDING", color: "text-amber-600", bg: "bg-amber-50" },
+  REJECTED: { label: "REJECTED", color: "text-stone-500", bg: "bg-stone-50" },
+  DRAFT: { label: "DRAFT", color: "text-stone-500", bg: "bg-stone-50" },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -55,13 +55,13 @@ function MetricCard({ label, value, trend, icon: Icon }: {
   label: string; value: string; trend?: string; icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="rounded-lg border border-rule bg-paper-raised p-4">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-wider text-ink-muted">{label}</div>
-        <Icon className="h-4 w-4 text-ink-muted" />
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+        <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
-      <div className="mt-2 text-xl font-semibold text-ink">{value}</div>
-      {trend && <div className="mt-1 font-mono text-[10px] text-green">{trend}</div>}
+      <div className="mt-2 text-xl font-semibold text-foreground">{value}</div>
+      {trend && <div className="mt-1 font-mono text-[10px] text-emerald-600">{trend}</div>}
     </div>
   );
 }
@@ -69,16 +69,16 @@ function MetricCard({ label, value, trend, icon: Icon }: {
 function BarChart({ data }: { data: { label: string; value: number }[] }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
-    <div className="rounded-lg border border-rule bg-paper-raised p-4">
-      <div className="mb-4 text-xs font-semibold text-ink">Spend by Vendor</div>
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="mb-4 text-xs font-semibold text-foreground">Spend by Vendor</div>
       <div className="space-y-2">
         {data.map((d) => (
           <div key={d.label} className="flex items-center gap-3">
-            <div className="w-20 shrink-0 text-right text-[10px] text-ink-muted truncate">{d.label}</div>
+            <div className="w-20 shrink-0 text-right text-[10px] text-muted-foreground truncate">{d.label}</div>
             <div className="flex-1">
-              <div className="h-5 rounded bg-text-muted/30 transition-all" style={{ width: `${(d.value / max) * 100}%` }} />
+              <div className="h-5 rounded-lg bg-accent/15 transition-all" style={{ width: `${(d.value / max) * 100}%` }} />
             </div>
-            <div className="w-16 shrink-0 font-mono text-[10px] text-ink-muted">{formatCents(d.value)}</div>
+            <div className="w-16 shrink-0 font-mono text-[10px] text-muted-foreground">{formatCents(d.value)}</div>
           </div>
         ))}
       </div>
@@ -96,8 +96,8 @@ function DonutChart({ data }: { data: { label: string; value: number; color: str
   let offset = 0;
 
   return (
-    <div className="rounded-lg border border-rule bg-paper-raised p-4">
-      <div className="mb-4 text-xs font-semibold text-ink">Status Distribution</div>
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <div className="mb-4 text-xs font-semibold text-foreground">Status Distribution</div>
       <div className="flex items-center gap-6">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {data.map((d) => {
@@ -111,7 +111,7 @@ function DonutChart({ data }: { data: { label: string; value: number; color: str
             offset += dash;
             return el;
           })}
-          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="fill-text font-mono text-xs">
+          <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="fill-foreground font-mono text-xs">
             {total}
           </text>
         </svg>
@@ -119,8 +119,8 @@ function DonutChart({ data }: { data: { label: string; value: number; color: str
           {data.map((d) => (
             <div key={d.label} className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: d.color }} />
-              <span className="text-[10px] text-ink-muted">{d.label}</span>
-              <span className="ml-auto font-mono text-[10px] text-ink">{d.value}</span>
+              <span className="text-[10px] text-muted-foreground">{d.label}</span>
+              <span className="ml-auto font-mono text-[10px] text-foreground">{d.value}</span>
             </div>
           ))}
         </div>
@@ -142,35 +142,35 @@ function SubmitModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (da
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-md rounded-lg border border-rule bg-paper-raised p-5">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Plus className="h-4 w-4 text-ink-muted" />
-            <span className="text-sm font-semibold text-ink">Submit Invoice</span>
+            <Plus className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-semibold text-foreground">Submit Invoice</span>
           </div>
-          <button onClick={onClose} className="text-ink-muted hover:text-ink"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="mb-1 block text-[10px] uppercase tracking-wider text-ink-muted">Invoice ID</label>
+            <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Invoice ID</label>
             <input type="text" value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)} placeholder="INV-2849"
-              className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 font-mono text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" required />
+              className="w-full rounded-lg border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50" required />
           </div>
           <div>
-            <label className="mb-1 block text-[10px] uppercase tracking-wider text-ink-muted">Vendor</label>
+            <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Vendor</label>
             <input type="text" value={vendor} onChange={(e) => setVendor(e.target.value)} placeholder="AWS Cloud Services"
-              className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" required />
+              className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50" required />
           </div>
           <div>
-            <label className="mb-1 block text-[10px] uppercase tracking-wider text-ink-muted">Amount (USD)</label>
+            <label className="mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Amount (USD)</label>
             <input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="450.00"
-              className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 font-mono text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30" required />
+              className="w-full rounded-lg border border-border bg-muted px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50" required />
           </div>
           <div className="flex gap-2 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs text-ink-muted hover:text-ink">Cancel</button>
-            <button type="submit" className="flex-1 rounded-md bg-purple py-2 text-xs font-semibold text-paper hover:bg-ink/90">Submit</button>
+            <button type="button" onClick={onClose} className="flex-1 rounded-lg border border-border bg-muted py-2 text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+            <button type="submit" className="flex-1 rounded-lg bg-accent py-2 text-xs font-semibold text-white hover:bg-accent/90">Submit</button>
           </div>
-          <p className="text-[10px] text-ink-muted">Auto-approves under $500. Sends to Telegram for review above.</p>
+          <p className="text-[10px] text-muted-foreground">Auto-approves under $500. Sends to Telegram for review above.</p>
         </form>
       </div>
     </div>
@@ -236,15 +236,15 @@ export default function DashboardOverview() {
     statusMap.set(key, (statusMap.get(key) || 0) + 1);
   });
   const donutColors: Record<string, string> = {
-    AUTO_APPROVED: "#34d399",
-    PENDING_APPROVAL: "#fbbf24",
-    REJECTED: "#7c7891",
-    DRAFT: "#7c7891",
+    AUTO_APPROVED: "#059669",
+    PENDING_APPROVAL: "#d97706",
+    REJECTED: "#78716c",
+    DRAFT: "#78716c",
   };
   const donutData = Array.from(statusMap.entries()).map(([label, value]) => ({
     label: label.replace("_", " "),
     value,
-    color: donutColors[label] || "#7c7891",
+    color: donutColors[label] || "#78716c",
   }));
 
   // Filter table
@@ -259,7 +259,7 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Metrics */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricCard label="Total Invoices" value={String(totalInvoices)} icon={FileText} />
         <MetricCard label="Volume Cleared" value={formatCents(totalVolume)} icon={DollarSign} />
         <MetricCard label="Pending Reviews" value={String(pendingCount)} icon={Clock} />
@@ -267,10 +267,10 @@ export default function DashboardOverview() {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {loading ? (
-          <div className="flex h-40 items-center justify-center rounded-lg border border-rule bg-paper-raised">
-            <RefreshCw className="h-4 w-4 text-ink-muted animate-spin" />
+          <div className="flex h-40 items-center justify-center rounded-2xl border border-border bg-card">
+            <RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" />
           </div>
         ) : (
           <>
@@ -281,54 +281,54 @@ export default function DashboardOverview() {
       </div>
 
       {/* Invoices + Activity */}
-      <div className="grid gap-3 lg:grid-cols-[1fr_340px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         {/* Invoices Table */}
-        <div className="rounded-lg border border-rule bg-paper-raised">
-          <div className="flex items-center justify-between border-b border-rule px-4 py-3">
+        <div className="rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-ink-muted" />
-              <span className="text-xs font-semibold text-ink">Invoices & Payables</span>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-semibold text-foreground">Invoices & Payables</span>
             </div>
             <button onClick={() => setShowModal(true)}
-              className="flex items-center gap-1 rounded-md bg-purple px-3 py-1.5 text-[10px] font-semibold text-paper hover:bg-ink/90">
+              className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-accent/90">
               <Plus className="h-3 w-3" /> Submit Invoice
             </button>
           </div>
 
-          <div className="flex items-center gap-1 border-b border-rule px-4 py-2">
-            <Filter className="h-3 w-3 text-ink-muted" />
+          <div className="flex items-center gap-1 border-b border-border px-5 py-2">
+            <Filter className="h-3 w-3 text-muted-foreground" />
             {filters.map((f) => (
               <button key={f} onClick={() => setFilter(f)}
-                className={`rounded px-2 py-1 text-[10px] capitalize transition-colors ${filter === f ? "bg-amber-soft text-ink" : "text-ink-muted hover:text-ink"}`}>
+                className={`rounded-lg px-2.5 py-1 text-[10px] capitalize transition-colors ${filter === f ? "bg-accent/10 text-accent" : "text-muted-foreground hover:text-foreground"}`}>
                 {f}
               </button>
             ))}
           </div>
 
           {loading ? (
-            <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-ink-muted animate-spin" /></div>
+            <div className="flex h-40 items-center justify-center"><RefreshCw className="h-4 w-4 text-muted-foreground animate-spin" /></div>
           ) : filtered.length === 0 ? (
             <div className="flex h-40 flex-col items-center justify-center gap-2">
-              <FileText className="h-6 w-6 text-ink-muted/30" />
-              <span className="text-xs text-ink-muted">No invoices yet</span>
+              <FileText className="h-6 w-6 text-muted-foreground/30" />
+              <span className="text-xs text-muted-foreground">No invoices yet</span>
             </div>
           ) : (
             <div className="divide-y divide-border">
               {filtered.map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between px-4 py-2.5 transition-colors hover:bg-paper-raised">
+                <div key={inv.id} className="flex items-center justify-between px-5 py-2.5 transition-colors hover:bg-muted/50">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-rule bg-paper-raised">
-                      {inv.status === "PENDING_APPROVAL" ? <Clock className="h-3 w-3 text-amber" />
-                        : inv.status === "REJECTED" ? <XCircle className="h-3 w-3 text-ink-muted" />
-                        : <CheckCircle2 className="h-3 w-3 text-green" />}
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-muted">
+                      {inv.status === "PENDING_APPROVAL" ? <Clock className="h-3 w-3 text-amber-600" />
+                        : inv.status === "REJECTED" ? <XCircle className="h-3 w-3 text-muted-foreground" />
+                        : <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
                     </div>
                     <div>
-                      <div className="text-xs font-medium text-ink">{inv.vendor_name}</div>
-                      <div className="font-mono text-[10px] text-ink-muted">{inv.invoice_id}</div>
+                      <div className="text-xs font-medium text-foreground">{inv.vendor_name}</div>
+                      <div className="font-mono text-[10px] text-muted-foreground">{inv.invoice_id}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono text-xs font-semibold text-ink">{formatCents(inv.amount_cents)}</div>
+                    <div className="font-mono text-xs font-semibold text-foreground">{formatCents(inv.amount_cents)}</div>
                     <StatusBadge status={inv.status} />
                   </div>
                 </div>
@@ -338,25 +338,25 @@ export default function DashboardOverview() {
         </div>
 
         {/* Activity Feed */}
-        <div className="rounded-lg border border-rule bg-paper-raised">
-          <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
-            <Activity className="h-4 w-4 text-ink-muted" />
-            <span className="text-xs font-semibold text-ink">Recent Activity</span>
+        <div className="rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+            <Activity className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs font-semibold text-foreground">Recent Activity</span>
           </div>
           <div className="divide-y divide-border">
             {invoices.slice(0, 8).map((inv) => (
-              <div key={inv.id} className="px-4 py-2">
-                <div className="font-mono text-[9px] text-ink-muted">
+              <div key={inv.id} className="px-5 py-2">
+                <div className="font-mono text-[9px] text-muted-foreground">
                   {new Date(inv.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                 </div>
-                <div className="mt-0.5 text-[11px] text-ink-muted">
-                  <span className="text-ink">{inv.invoice_id}</span> {inv.vendor_name} - {formatCents(inv.amount_cents)}
+                <div className="mt-0.5 text-[11px] text-muted-foreground">
+                  <span className="text-foreground">{inv.invoice_id}</span> {inv.vendor_name} - {formatCents(inv.amount_cents)}
                 </div>
                 <div className="mt-0.5"><StatusBadge status={inv.status} /></div>
               </div>
             ))}
             {!loading && invoices.length === 0 && (
-              <div className="px-4 py-6 text-center text-[10px] text-ink-muted">No activity yet</div>
+              <div className="px-5 py-6 text-center text-[10px] text-muted-foreground">No activity yet</div>
             )}
           </div>
         </div>

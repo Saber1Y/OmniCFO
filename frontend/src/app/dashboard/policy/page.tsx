@@ -6,7 +6,6 @@ import {
   Plus,
   X,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
   Save,
   RotateCcw,
@@ -63,10 +62,10 @@ export default function PolicyPage() {
   };
 
   const actionColor: Record<string, string> = {
-    triggered: "text-amber",
-    passed: "text-green",
-    warning: "text-amber",
-    skipped: "text-ink-muted",
+    triggered: "text-amber-600",
+    passed: "text-emerald-600",
+    warning: "text-amber-600",
+    skipped: "text-muted-foreground",
   };
 
   return (
@@ -74,17 +73,17 @@ export default function PolicyPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-ink">Policy Engine & Limits</h1>
-          <p className="text-[10px] text-ink-muted">
+          <h1 className="text-lg font-semibold text-foreground">Policy Engine & Limits</h1>
+          <p className="text-[10px] text-muted-foreground">
             Fail-closed rules enforcing spend thresholds, vendor whitelisting, and budget caps
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="flex items-center gap-1 rounded-md border border-rule px-3 py-1.5 text-[10px] text-ink-muted hover:text-ink">
+          <button className="flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-[10px] text-muted-foreground hover:text-foreground">
             <RotateCcw className="h-3 w-3" />
             Reset Defaults
           </button>
-          <button className="flex items-center gap-1 rounded-md bg-purple px-3 py-1.5 text-[10px] font-semibold text-paper hover:bg-ink/90">
+          <button className="flex items-center gap-1 rounded-lg bg-accent px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-accent/90">
             <Save className="h-3 w-3" />
             Save Changes
           </button>
@@ -92,54 +91,54 @@ export default function PolicyPage() {
       </div>
 
       {/* Rules */}
-      <div className="rounded-lg border border-rule bg-paper-raised">
-        <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
-          <ShieldCheck className="h-4 w-4 text-ink-muted" />
-          <span className="text-xs font-semibold text-ink">Active Rules</span>
-          <span className="ml-auto font-mono text-[10px] text-ink-muted">
+      <div className="rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-semibold text-foreground">Active Rules</span>
+          <span className="ml-auto font-mono text-[10px] text-muted-foreground">
             {rules.filter((r) => r.enabled).length}/{rules.length} enabled
           </span>
         </div>
         <div className="divide-y divide-border">
           {rules.map((rule) => (
-            <div key={rule.id} className="px-4 py-3">
+            <div key={rule.id} className="px-5 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => toggleRule(rule.id)}
-                    className={`flex h-5 w-5 items-center justify-center rounded border ${
+                    className={`flex h-5 w-5 items-center justify-center rounded-md border ${
                       rule.enabled
-                        ? "border-purple/40 bg-amber-soft"
-                        : "border-rule bg-paper-raised"
+                        ? "border-accent/40 bg-accent/10"
+                        : "border-border bg-muted"
                     }`}
                   >
-                    {rule.enabled && <CheckCircle2 className="h-3 w-3 text-green" />}
+                    {rule.enabled && <CheckCircle2 className="h-3 w-3 text-emerald-600" />}
                   </button>
                   <div>
-                    <div className="text-xs font-medium text-ink">{rule.name}</div>
-                    <div className="text-[10px] text-ink-muted">{rule.description}</div>
+                    <div className="text-xs font-medium text-foreground">{rule.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{rule.description}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs text-ink">{rule.value}</span>
+                  <span className="font-mono text-xs text-foreground">{rule.value}</span>
                   <button
                     onClick={() => setEditing(editing === rule.id ? null : rule.id)}
-                    className="rounded px-2 py-1 text-[10px] text-ink-muted hover:text-ink"
+                    className="rounded-lg px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground"
                   >
                     Edit
                   </button>
                 </div>
               </div>
               {editing === rule.id && (
-                <div className="mt-3 ml-8 rounded-md border border-rule bg-paper-raised p-3">
+                <div className="mt-3 ml-8 rounded-lg border border-border bg-muted p-3">
                   <input
                     type="text"
                     defaultValue={rule.value}
-                    className="w-full rounded border border-rule bg-paper-raised px-2 py-1.5 font-mono text-xs text-ink outline-none focus:border-ink/30"
+                    className="w-full rounded-md border border-border bg-card px-2 py-1.5 font-mono text-xs text-foreground outline-none focus:border-accent/50"
                   />
                   <div className="mt-2 flex gap-2">
-                    <button className="rounded bg-purple px-3 py-1 text-[10px] font-semibold text-paper">Apply</button>
-                    <button onClick={() => setEditing(null)} className="rounded px-3 py-1 text-[10px] text-ink-muted">Cancel</button>
+                    <button className="rounded-md bg-accent px-3 py-1 text-[10px] font-semibold text-white">Apply</button>
+                    <button onClick={() => setEditing(null)} className="rounded-md px-3 py-1 text-[10px] text-muted-foreground">Cancel</button>
                   </div>
                 </div>
               )}
@@ -150,12 +149,12 @@ export default function PolicyPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Vendor Whitelist */}
-        <div className="rounded-lg border border-rule bg-paper-raised">
-          <div className="flex items-center justify-between border-b border-rule px-4 py-3">
-            <span className="text-xs font-semibold text-ink">Vendor Whitelist</span>
+        <div className="rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3">
+            <span className="text-xs font-semibold text-foreground">Vendor Whitelist</span>
             <button
               onClick={() => setShowAddVendor(true)}
-              className="flex items-center gap-1 rounded bg-amber-soft px-2 py-1 text-[10px] text-ink hover:bg-amber-soft"
+              className="flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-[10px] text-amber-600 hover:bg-amber-100"
             >
               <Plus className="h-3 w-3" />
               Add
@@ -163,14 +162,14 @@ export default function PolicyPage() {
           </div>
           <div className="divide-y divide-border">
             {vendorList.map((v) => (
-              <div key={v.name} className="flex items-center justify-between px-4 py-2">
-                <div className="text-xs text-ink">{v.name}</div>
+              <div key={v.name} className="flex items-center justify-between px-5 py-2">
+                <div className="text-xs text-foreground">{v.name}</div>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] text-ink-muted">{v.spend}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">{v.spend}</span>
                   <span className={`rounded-full px-2 py-0.5 text-[9px] font-mono ${
                     v.status === "approved"
-                      ? "bg-green-soft text-green"
-                      : "bg-amber-soft text-amber"
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-amber-50 text-amber-600"
                   }`}>
                     {v.status}
                   </span>
@@ -181,24 +180,24 @@ export default function PolicyPage() {
         </div>
 
         {/* Audit Log */}
-        <div className="rounded-lg border border-rule bg-paper-raised">
-          <div className="flex items-center gap-2 border-b border-rule px-4 py-3">
-            <AlertTriangle className="h-4 w-4 text-ink-muted" />
-            <span className="text-xs font-semibold text-ink">Policy Audit Log</span>
+        <div className="rounded-2xl border border-border bg-card shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs font-semibold text-foreground">Policy Audit Log</span>
           </div>
           <div className="divide-y divide-border">
             {auditLog.map((log, i) => (
-              <div key={i} className="px-4 py-2">
+              <div key={i} className="px-5 py-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] text-ink-muted">{log.time}</span>
-                    <span className="text-[10px] text-ink">{log.rule}</span>
+                    <span className="font-mono text-[9px] text-muted-foreground">{log.time}</span>
+                    <span className="text-[10px] text-foreground">{log.rule}</span>
                   </div>
                   <span className={`font-mono text-[9px] uppercase tracking-wider ${actionColor[log.action]}`}>
                     {log.action}
                   </span>
                 </div>
-                <div className="mt-0.5 text-[10px] text-ink-muted">
+                <div className="mt-0.5 text-[10px] text-muted-foreground">
                   {log.invoice} - {log.detail}
                 </div>
               </div>
@@ -209,10 +208,10 @@ export default function PolicyPage() {
 
       {showAddVendor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-sm rounded-lg border border-rule bg-paper-raised p-5">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-lg">
             <div className="mb-4 flex items-center justify-between">
-              <span className="text-sm font-semibold text-ink">Add Vendor</span>
-              <button onClick={() => setShowAddVendor(false)} className="text-ink-muted hover:text-ink">
+              <span className="text-sm font-semibold text-foreground">Add Vendor</span>
+              <button onClick={() => setShowAddVendor(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -220,13 +219,13 @@ export default function PolicyPage() {
               <input
                 type="text"
                 placeholder="Vendor name"
-                className="w-full rounded-md border border-rule bg-paper-raised px-3 py-2 text-xs text-ink placeholder:text-ink-muted/50 outline-none focus:border-ink/30"
+                className="w-full rounded-lg border border-border bg-muted px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-accent/50"
               />
               <div className="flex gap-2">
-                <button onClick={() => setShowAddVendor(false)} className="flex-1 rounded-md border border-rule bg-paper-raised py-2 text-xs text-ink-muted">
+                <button onClick={() => setShowAddVendor(false)} className="flex-1 rounded-lg border border-border bg-muted py-2 text-xs text-muted-foreground">
                   Cancel
                 </button>
-                <button className="flex-1 rounded-md bg-purple py-2 text-xs font-semibold text-paper hover:bg-ink/90">
+                <button className="flex-1 rounded-lg bg-accent py-2 text-xs font-semibold text-white hover:bg-accent/90">
                   Add Vendor
                 </button>
               </div>
