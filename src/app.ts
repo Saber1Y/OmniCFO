@@ -39,17 +39,6 @@ export function createApp(): express.Express {
     res.json({ status: "ok", service: "OmniCFO", timestamp: new Date().toISOString() });
   });
 
-  // Debug: test Supabase connection
-  app.get("/debug", async (_req, res) => {
-    try {
-      const { listAllInvoices } = await import("./services/supabase.js");
-      const invoices = await listAllInvoices();
-      res.json({ ok: true, count: invoices.length, env: { url: !!process.env.SUPABASE_URL, key: !!process.env.SUPABASE_SERVICE_KEY } });
-    } catch (err) {
-      res.json({ ok: false, error: err instanceof Error ? err.message : String(err) });
-    }
-  });
-
   // Routes
   app.use("/api/invoices", invoiceRouter);
   app.use("/api/policy", policyRouter);
