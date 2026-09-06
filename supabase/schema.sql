@@ -45,3 +45,33 @@ CREATE TRIGGER update_invoices_updated_at
   BEFORE UPDATE ON invoices
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- Policy settings table (single-row, key-value for persistence)
+CREATE TABLE IF NOT EXISTS policy_settings (
+  id INTEGER PRIMARY KEY DEFAULT 1,
+  rules JSONB NOT NULL DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enforce single row
+CREATE UNIQUE INDEX IF NOT EXISTS policy_settings_single_row ON policy_settings (id);
+
+-- Vendors table
+CREATE TABLE IF NOT EXISTS policy_vendors (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  trusted BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Audit log table
+CREATE TABLE IF NOT EXISTS policy_audit (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  rule TEXT NOT NULL,
+  action TEXT NOT NULL,
+  invoice_id TEXT NOT NULL,
+  detail TEXT NOT NULL,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_policy_audit_timestamp ON policy_audit (timestamp DESC);

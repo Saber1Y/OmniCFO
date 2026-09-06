@@ -35,4 +35,9 @@ export const config = {
       10
     ),
   },
+  ai: {
+    apiKey: optionalEnv("TENSORMUX_API_KEY", ""),
+    baseUrl: optionalEnv("TENSORMUX_BASE_URL", "https://api.tensormux.com/v1"),
+    model: optionalEnv("TENSORMUX_MODEL", "glm-4-7-flash"),
+  },
 } as const;

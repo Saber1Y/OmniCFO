@@ -47,7 +47,7 @@ invoiceRouter.post("/", async (req: Request, res: Response) => {
     const invoice = await insertInvoice({ invoice_id, vendor_name, amount_cents, metadata });
 
     // Run policy check
-    const decision = evaluateInvoice(invoice);
+    const decision = await evaluateInvoice(invoice);
 
     if (decision.approved) {
       // Auto-approve and initiate payment
@@ -76,7 +76,7 @@ invoiceRouter.post("/", async (req: Request, res: Response) => {
       // Flag for human approval and notify via Telegram
       await updateInvoiceStatus(invoice.id, "PENDING_APPROVAL");
 
-      const message = formatApprovalMessage(invoice);
+      const message = await formatApprovalMessage(invoice);
       const messageId = await sendApprovalRequest(message, invoice.id);
 
       await updateInvoiceStatus(invoice.id, "PENDING_APPROVAL", {

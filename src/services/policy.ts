@@ -1,6 +1,6 @@
 import { createLogger } from "../logger.js";
 import type { Invoice, PolicyDecision } from "../types.js";
-import { getAutoApproveThresholdCents, recordAuditEntry } from "../routes/policy.js";
+import { getAutoApproveThresholdCents, recordAuditEntry } from "./supabase.js";
 
 const log = createLogger("policy");
 
@@ -11,10 +11,10 @@ const log = createLogger("policy");
  * - Amount <= threshold: AUTO_APPROVED
  * - Amount > threshold: PENDING_APPROVAL (requires CFO sign-off)
  *
- * Uses live threshold from the policy API (in-memory store).
+ * Uses live threshold from the policy API (Supabase).
  */
-export function evaluateInvoice(invoice: Invoice): PolicyDecision {
-  const threshold = getAutoApproveThresholdCents();
+export async function evaluateInvoice(invoice: Invoice): Promise<PolicyDecision> {
+  const threshold = await getAutoApproveThresholdCents();
 
   if (invoice.amount_cents <= threshold) {
     log.info("Invoice auto-approved (under threshold)", {
@@ -60,8 +60,8 @@ export function evaluateInvoice(invoice: Invoice): PolicyDecision {
 /**
  * Format a human-readable approval summary for Telegram notifications.
  */
-export function formatApprovalMessage(invoice: Invoice): string {
-  const threshold = getAutoApproveThresholdCents();
+export async function formatApprovalMessage(invoice: Invoice): Promise<string> {
+  const threshold = await getAutoApproveThresholdCents();
   return [
     `🔔 *New Invoice Requiring Approval*`,
     ``,

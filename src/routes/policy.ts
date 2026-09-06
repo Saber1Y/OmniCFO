@@ -1,75 +1,18 @@
 import { Router, type Request, type Response } from "express";
 import { createLogger } from "../logger.js";
-import { config } from "../config.js";
+import {
+  getPolicyRules,
+  updatePolicyRules,
+  resetPolicyRules,
+  listVendors,
+  addVendor,
+  removeVendor,
+  getAuditLog,
+  recordAuditEntry,
+  getAutoApproveThresholdCents,
+} from "../services/supabase.js";
 
 const log = createLogger("route:policy");
-
-// --- In-memory policy store (hackathon-simple, survives request lifecycle) ---
-
-interface PolicyRules {
-  autoApproveThresholdCents: number;
-  requireTelegramApproval: boolean;
-  requireDualApproval: boolean;
-  maxRetryAttempts: number;
-  approvalTimeoutSeconds: number;
-}
-
-interface VendorEntry {
-  id: string;
-  name: string;
-  trusted: boolean;
-}
-
-interface AuditEntry {
-  timestamp: string;
-  rule: string;
-  action: "triggered" | "passed" | "warning" | "skipped" | "rejected";
-  invoice_id: string;
-  detail: string;
-}
-
-let policyRules: PolicyRules = {
-  autoApproveThresholdCents: config.policy.autoApproveThresholdCents,
-  requireTelegramApproval: true,
-  requireDualApproval: false,
-  maxRetryAttempts: 3,
-  approvalTimeoutSeconds: 300,
-};
-
-let vendors: VendorEntry[] = [
-  { id: "v1", name: "AWS Cloud Services", trusted: true },
-  { id: "v2", name: "Datadog Inc.", trusted: true },
-  { id: "v3", name: "GitHub Enterprise", trusted: true },
-  { id: "v4", name: "Vercel Platform", trusted: true },
-  { id: "v5", name: "Supabase Pro", trusted: true },
-  { id: "v6", name: "Stripe Processing", trusted: true },
-];
-
-let auditLog: AuditEntry[] = [];
-
-let vendorIdCounter = 7;
-
-/**
- * Record an audit entry (called from other services after policy evaluation).
- */
-export function recordAuditEntry(entry: Omit<AuditEntry, "timestamp">) {
-  auditLog.unshift({
-    ...entry,
-    timestamp: new Date().toISOString(),
-  });
-  if (auditLog.length > 100) {
-    auditLog = auditLog.slice(0, 100);
-  }
-}
-
-/**
- * Get the current auto-approve threshold in cents.
- */
-export function getAutoApproveThresholdCents(): number {
-  return policyRules.autoApproveThresholdCents;
-}
-
-// --- Router ---
 
 export const policyRouter = Router();
 
@@ -78,13 +21,14 @@ export const policyRouter = Router();
  *
  * Returns policy rules, vendor whitelist, and recent audit log.
  */
-policyRouter.get("/", (_req: Request, res: Response) => {
+policyRouter.get("/", async (_req: Request, res: Response) => {
   try {
-    res.json({
-      rules: policyRules,
-      vendors,
-      auditLog: auditLog.slice(0, 20),
-    });
+    const [rules, vendors, auditLog] = await Promise.all([
+      getPolicyRules(),
+      listVendors(),
+      getAuditLog(20),
+    ]);
+    res.json({ rules, vendors, auditLog });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     log.error("Failed to fetch policy", { error: message });
@@ -97,8 +41,15 @@ policyRouter.get("/", (_req: Request, res: Response) => {
  *
  * Returns just the policy rules.
  */
-policyRouter.get("/rules", (_req: Request, res: Response) => {
-  res.json({ rules: policyRules });
+policyRouter.get("/rules", async (_req: Request, res: Response) => {
+  try {
+    const rules = await getPolicyRules();
+    res.json({ rules });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    log.error("Failed to fetch rules", { error: message });
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 /**
@@ -106,7 +57,7 @@ policyRouter.get("/rules", (_req: Request, res: Response) => {
  *
  * Update policy rules. Accepts a flat object with rule fields.
  */
-policyRouter.put("/rules", (req: Request, res: Response) => {
+policyRouter.put("/rules", async (req: Request, res: Response) => {
   try {
     const updates = req.body;
 
@@ -115,24 +66,8 @@ policyRouter.put("/rules", (req: Request, res: Response) => {
       return;
     }
 
-    if (updates.autoApproveThresholdCents !== undefined) {
-      policyRules.autoApproveThresholdCents = Number(updates.autoApproveThresholdCents);
-    }
-    if (updates.requireTelegramApproval !== undefined) {
-      policyRules.requireTelegramApproval = Boolean(updates.requireTelegramApproval);
-    }
-    if (updates.requireDualApproval !== undefined) {
-      policyRules.requireDualApproval = Boolean(updates.requireDualApproval);
-    }
-    if (updates.maxRetryAttempts !== undefined) {
-      policyRules.maxRetryAttempts = Number(updates.maxRetryAttempts);
-    }
-    if (updates.approvalTimeoutSeconds !== undefined) {
-      policyRules.approvalTimeoutSeconds = Number(updates.approvalTimeoutSeconds);
-    }
-
-    log.info("Policy rules updated", { threshold: policyRules.autoApproveThresholdCents });
-    res.json({ rules: policyRules });
+    const rules = await updatePolicyRules(updates);
+    res.json({ rules });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     log.error("Failed to update rules", { error: message });
@@ -145,16 +80,16 @@ policyRouter.put("/rules", (req: Request, res: Response) => {
  *
  * Reset all rules to defaults.
  */
-policyRouter.post("/rules/reset", (_req: Request, res: Response) => {
-  policyRules = {
-    autoApproveThresholdCents: config.policy.autoApproveThresholdCents,
-    requireTelegramApproval: true,
-    requireDualApproval: false,
-    maxRetryAttempts: 3,
-    approvalTimeoutSeconds: 300,
-  };
-  log.info("Policy rules reset to defaults");
-  res.json({ rules: policyRules });
+policyRouter.post("/rules/reset", async (_req: Request, res: Response) => {
+  try {
+    const rules = await resetPolicyRules();
+    log.info("Policy rules reset to defaults");
+    res.json({ rules });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    log.error("Failed to reset rules", { error: message });
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 /**
@@ -162,8 +97,15 @@ policyRouter.post("/rules/reset", (_req: Request, res: Response) => {
  *
  * Returns the vendor whitelist.
  */
-policyRouter.get("/vendors", (_req: Request, res: Response) => {
-  res.json({ vendors });
+policyRouter.get("/vendors", async (_req: Request, res: Response) => {
+  try {
+    const vendors = await listVendors();
+    res.json({ vendors });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    log.error("Failed to fetch vendors", { error: message });
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 /**
@@ -171,7 +113,7 @@ policyRouter.get("/vendors", (_req: Request, res: Response) => {
  *
  * Add a vendor to the whitelist.
  */
-policyRouter.post("/vendors", (req: Request, res: Response) => {
+policyRouter.post("/vendors", async (req: Request, res: Response) => {
   try {
     const { name } = req.body as { name: string };
     if (!name || typeof name !== "string") {
@@ -179,21 +121,14 @@ policyRouter.post("/vendors", (req: Request, res: Response) => {
       return;
     }
 
-    if (vendors.some((v) => v.name.toLowerCase() === name.toLowerCase())) {
-      res.status(409).json({ error: "Vendor already exists" });
-      return;
-    }
-
-    const vendor: VendorEntry = {
-      id: `v${vendorIdCounter++}`,
-      name,
-      trusted: false,
-    };
-    vendors.push(vendor);
-    log.info("Vendor added", { name });
+    const vendor = await addVendor(name);
     res.status(201).json(vendor);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    if (message === "Vendor already exists") {
+      res.status(409).json({ error: message });
+      return;
+    }
     log.error("Failed to add vendor", { error: message });
     res.status(500).json({ error: "Internal server error" });
   }
@@ -204,16 +139,17 @@ policyRouter.post("/vendors", (req: Request, res: Response) => {
  *
  * Remove a vendor from the whitelist by ID.
  */
-policyRouter.delete("/vendors/:id", (req: Request, res: Response) => {
-  const id = req.params.id;
-  const idx = vendors.findIndex((v) => v.id === id);
-  if (idx === -1) {
-    res.status(404).json({ error: "Vendor not found" });
-    return;
+policyRouter.delete("/vendors/:id", async (req: Request, res: Response) => {
+  try {
+const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  await removeVendor(id);
+    log.info("Vendor removed", { id });
+    res.json({ ok: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    log.error("Failed to remove vendor", { error: message });
+    res.status(500).json({ error: "Internal server error" });
   }
-  const removed = vendors.splice(idx, 1)[0];
-  log.info("Vendor removed", { name: removed.name });
-  res.json({ ok: true });
 });
 
 /**
@@ -221,6 +157,16 @@ policyRouter.delete("/vendors/:id", (req: Request, res: Response) => {
  *
  * Returns the audit log.
  */
-policyRouter.get("/audit", (_req: Request, res: Response) => {
-  res.json({ auditLog });
+policyRouter.get("/audit", async (_req: Request, res: Response) => {
+  try {
+    const auditLog = await getAuditLog(100);
+    res.json({ auditLog });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    log.error("Failed to fetch audit log", { error: message });
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
+
+// Export for use by other services
+export { recordAuditEntry, getAutoApproveThresholdCents };
