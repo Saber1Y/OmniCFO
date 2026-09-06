@@ -42,12 +42,17 @@ export async function createCheckoutSession(params: {
     description: params.description,
   });
 
-  // Dodo amounts are in cents
+  // Use a pay-what-you-want product (configured in Dodo dashboard with pay_what_you_want=true)
+  // The amount is passed dynamically via ProductItemReq.amount
+  const productId = process.env.DODO_PAY_WHAT_YOU_WANT_PRODUCT_ID ?? process.env.DODO_PRODUCT_ID ?? "pdt_0Nmw7740CjLSuF3GAUb0B";
+
   const session = await dodo.checkoutSessions.create({
     product_cart: [
       {
-        product_id: process.env.DODO_PRODUCT_ID ?? "pdt_0Nmw7740CjLSuF3GAUb0B",
+        product_id: productId,
         quantity: 1,
+        // Dynamic amount override - requires product to have pay_what_you_want=true in Dodo dashboard
+        amount: params.amount_cents,
       },
     ],
     customer: {
@@ -55,12 +60,16 @@ export async function createCheckoutSession(params: {
       name: params.metadata.vendor_name ?? "Invoice Vendor",
     },
     return_url: "https://omnicfo.io/payment/success",
-    metadata: params.metadata,
+    metadata: {
+      ...params.metadata,
+      amount_cents: String(params.amount_cents),
+    },
   });
 
   log.info("Dodo checkout session created", {
     session_id: session.session_id,
     checkout_url: session.checkout_url,
+    amount_cents: params.amount_cents,
   });
 
   return {
