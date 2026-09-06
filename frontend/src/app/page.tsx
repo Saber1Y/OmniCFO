@@ -7,6 +7,7 @@ import { SecurityDiagram } from "@/components/SecurityDiagram";
 import { TechStack } from "@/components/TechStack";
 import { CTA } from "@/components/CTA";
 import { Footer } from "@/components/Footer";
+import { Screenshots } from "@/components/Screenshots";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
         <SecurityDiagram />
         <ProductShowcase />
         <WorkflowDiagram />
+        <Screenshots />
         <TechStack />
         <CTA />
       </main>

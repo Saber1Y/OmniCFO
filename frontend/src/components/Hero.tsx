@@ -35,10 +35,10 @@ export function Hero() {
             className="mt-8 flex flex-wrap items-center gap-4"
           >
             <a
-              href="#architecture"
+              href="/dashboard"
               className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90"
             >
-              See architecture
+              Open dashboard
             </a>
             <a
               href="https://github.com/Saber1Y/OmniCFO"
