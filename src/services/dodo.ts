@@ -42,9 +42,10 @@ export async function createCheckoutSession(params: {
     description: params.description,
   });
 
-  // Use a pay-what-you-want product (configured in Dodo dashboard with pay_what_you_want=true)
-  // The amount is passed dynamically via ProductItemReq.amount
-  const productId = process.env.DODO_PAY_WHAT_YOU_WANT_PRODUCT_ID ?? process.env.DODO_PRODUCT_ID ?? "pdt_0Nmw7740CjLSuF3GAUb0B";
+  // Use a pay-what-you-want product (created with pay_what_you_want=true, min price 1 cent).
+  // The amount is passed dynamically via ProductItemReq.amount, so every invoice
+  // charges exactly its own amount - no per-invoice product management needed.
+  const productId = process.env.DODO_PAY_WHAT_YOU_WANT_PRODUCT_ID ?? "pdt_0NnRSVU4dzKo0Vhu2t8UO";
 
   const session = await dodo.checkoutSessions.create({
     product_cart: [
